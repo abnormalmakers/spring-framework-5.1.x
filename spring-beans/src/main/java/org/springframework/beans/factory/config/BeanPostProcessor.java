@@ -20,6 +20,29 @@ import org.springframework.beans.BeansException;
 import org.springframework.lang.Nullable;
 
 /**
+ * BeanPostPorcessor 是 Spring 框架通过的一个扩展类点(不止一个)
+ * 通过实现 BeanPostProcessor 接口 ，程序员可以插手 bean 的实例化过程 ， 减轻 BeanFactory 的负担
+ * 这个接口可设置多个，形成一个列表，然后依次执行
+ * 比如 AOP 就是在 bean 的实例化后将切面逻辑动态的织入 bean实例中，AOP 也正是通过 BeanPostProcessor 和 IOC 容器建立起了联系
+ * Spring 默认提供了喝多 PostProcessor
+ * 1. ApplicationContextAwareProcessor
+ * 		作用： 当应用程序定义的 Bean 实现了 ApplicationContextAware 接口时给其注入 ApplicationContext 对象
+ *
+ * 2.InitDestroyAnnotationBeanPostProcessor
+ * 	 	作用： 用来处理自定义的初始化方法he销毁方法
+ * 	 	Spring 提供了 3 种自定义初始化和销毁方法
+ * 	 		1.通过 @Bean 指定 init-method 和 destroy-method	 属性
+ * 	 		2.Bean 实现 InitializingBean 和 DisposableBean 接口
+ * 			3.@PostConstructor  和 @PreDestroy
+ *
+ * 3.InstantiationAwareBeanPostProcessor
+ * 4.CommonAnnotationBeanPostProcessor
+ * 5.AutowiredAnnotationBeanPostProcessor
+ * 6.RequireAnnotationBeanPostProcessor
+ * 7.BeanValidationPostProcessor
+ * 8.AbstractAutoProxyCreator
+ * ......
+ *
  * Factory hook that allows for custom modification of new bean instances,
  * e.g. checking for marker interfaces or wrapping them with proxies.
  *
