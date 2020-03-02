@@ -20,9 +20,14 @@ import org.springframework.beans.BeansException;
 import org.springframework.lang.Nullable;
 
 /**
- * BeanPostPorcessor 是 Spring 框架通过的一个扩展类点(不止一个)
+ * BeanPostProcessor 是 Spring 框架通过的一个扩展类点(不止一个)
  * 通过实现 BeanPostProcessor 接口 ，程序员可以插手 bean 的实例化过程 ， 减轻 BeanFactory 的负担
  * 这个接口可设置多个，形成一个列表，然后依次执行
+ * 具体查看 AbstractBeanFactory ， 其中
+ * private final List<BeanPostProcessor> beanPostProcessors=new CopyOnWriteArrayList<>(); 此属性 维护一个 List<BeanPostProcessor>
+ * addBeanPostProcessor(BeanPostProcessor beanPostProcessor) 方法添加一个 BeanPostProcessor
+ * List<BeanPostProcessor> getBeanPostProcessors() 此方法返回 BeanPostProcessors 列表
+ * 在整个 bean 的实例化过程中，依次循环这个 List<BeanPostProcessor> 来达到插手 bean 实例化的过程
  * 比如 AOP 就是在 bean 的实例化后将切面逻辑动态的织入 bean实例中，AOP 也正是通过 BeanPostProcessor 和 IOC 容器建立起了联系
  * Spring 默认提供了喝多 PostProcessor
  * 1. ApplicationContextAwareProcessor
