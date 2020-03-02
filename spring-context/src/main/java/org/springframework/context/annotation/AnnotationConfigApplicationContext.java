@@ -101,7 +101,7 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 	public AnnotationConfigApplicationContext(Class<?>... componentClasses) {
 		/**
 		this() 会先调用父类构造方法
-		然后调用自己的构造方法，在自己的构造方法中初始化一个读取器和扫描器
+		然后调用自己的无参构造方法，在自己的构造方法中初始化一个读取器和扫描器
 		*/
 		this();
 		register(componentClasses);
