@@ -151,18 +151,34 @@ public abstract class AnnotationConfigUtils {
 		DefaultListableBeanFactory beanFactory = unwrapDefaultListableBeanFactory(registry);
 		if (beanFactory != null) {
 			if (!(beanFactory.getDependencyComparator() instanceof AnnotationAwareOrderComparator)) {
+				/** AnnotationAwareOrderComparator 主要解析 @Order 注解和 @Priority **/
 				beanFactory.setDependencyComparator(AnnotationAwareOrderComparator.INSTANCE);
 			}
 			if (!(beanFactory.getAutowireCandidateResolver() instanceof ContextAnnotationAutowireCandidateResolver)) {
+				/** ContextAnnotationAutowireCandidateResolver 提供处理延迟加载功能**/
 				beanFactory.setAutowireCandidateResolver(new ContextAnnotationAutowireCandidateResolver());
 			}
 		}
 
+		/**初始化一个 Set 集合用于存放 BeanDefinitionHolder 类
+		 * BeanDefinitionHolder 则是存放 BeanName BeanDefinition Alias 的一个类
+		 * **/
 		Set<BeanDefinitionHolder> beanDefs = new LinkedHashSet<>(8);
 
+		/** BeanDefinition 的注册 , 这里Spring会注册几个内置的BeanDefinition 到 BeanDefinitionMap 中 */
 		if (!registry.containsBeanDefinition(CONFIGURATION_ANNOTATION_PROCESSOR_BEAN_NAME)) {
+			/** ConfigurationClassPostProcessor 类型是 BeanDefinitionRegistryPostProcessor
+			 *  而 BeanDefinitionRegistryPostProcessor 最终实现 BeanFactoryPostProcessor 这个接口
+			 *  类关系：
+			 *   ConfigurationClassPostProcessor implements  BeanDefinitionRegistryPostProcessor
+			 *   BeanDefinitionRegistryPostProcessor extends BeanFactoryPostProcessor
+			 * **/
 			RootBeanDefinition def = new RootBeanDefinition(ConfigurationClassPostProcessor.class);
 			def.setSource(source);
+			/**registry 即 BeanDefinitionRegistry，
+			 * BeanDefinitionRegistry 是一个接口， 而 AnnotationConfigApplicationContext 是 BeanDefinitionRegistry 的一个实现类
+			 * beanDefinitionMap 中 put internalConfigurationAnnotationProcessor
+			 * **/
 			beanDefs.add(registerPostProcessor(registry, def, CONFIGURATION_ANNOTATION_PROCESSOR_BEAN_NAME));
 		}
 
