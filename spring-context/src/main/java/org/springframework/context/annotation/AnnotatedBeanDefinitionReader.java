@@ -61,6 +61,7 @@ public class AnnotatedBeanDefinitionReader {
 	 * 这里的参数 BeanDefinitionRegistry registry 是通过 AnnotationConfigApplycationContext 的构造方法中传进来的this
 	 * AnnotationConfigApplycationContext 是一个 BeanDefinitionRegistry 类
 	 * GenericApplicationContext extends AbstractApplicationContext implements BeanDefinitionRegistry
+	 *
 	 * BeanDefinitionRegistry 的作用？
 	 * BeanDefinitionRegistry 就是 BeanDefinition 的注册器
 	 *
