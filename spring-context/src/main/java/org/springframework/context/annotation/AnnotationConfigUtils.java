@@ -147,7 +147,7 @@ public abstract class AnnotationConfigUtils {
 	 */
 	public static Set<BeanDefinitionHolder> registerAnnotationConfigProcessors(
 			BeanDefinitionRegistry registry, @Nullable Object source) {
-
+		/** 将当前环境转换为 DefaultListableBeanFactory ，详细进入方法查看*/
 		DefaultListableBeanFactory beanFactory = unwrapDefaultListableBeanFactory(registry);
 		if (beanFactory != null) {
 			if (!(beanFactory.getDependencyComparator() instanceof AnnotationAwareOrderComparator)) {
@@ -233,6 +233,18 @@ public abstract class AnnotationConfigUtils {
 		return new BeanDefinitionHolder(definition, beanName);
 	}
 
+	/**
+	 * BeanDefinitionRegistry
+	 * AnnotationConfigApplicationContext 和 DefaultListableBeanFactory 都对 BeanDefinitionRegistry做了实现
+	 * 但这两个类并不存在于一个继承链中，是一个聚合的关系
+	 * 这里可以查看BeanFactory 的继承关系图，看当前 new 的 Spring环境是哪个
+	 * 如果是继承自 DefaultListableBeanFactory，直接强转
+	 * 如果是继承自 GenericApplicationContext （比如 AnnotationConfigApplicationContext）
+	 * 那么先强转为 GenericApplicationContext， GenericApplicationContext 有一个属性 beanFactory 即使 DefaultListableBeanFactory
+	 * 在 getDefaultListableBeanFactory 获取 DefaultListableBeanFactory 对象
+	 * @param registry
+	 * @return
+	 */
 	@Nullable
 	private static DefaultListableBeanFactory unwrapDefaultListableBeanFactory(BeanDefinitionRegistry registry) {
 		if (registry instanceof DefaultListableBeanFactory) {
