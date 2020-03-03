@@ -58,7 +58,7 @@ import org.springframework.util.ConcurrentReferenceHashMap;
  *
  * <pre class="code">
  * LocalContainerEntityManagerFactoryBean emfb = ...
- * emfb.getJpaPropertyMap().put(AvailableSettings.BEAN_CONTAINER, new SpringBeanContainer(beanFactory));
+ * emfb.getJpaPropertyMap().put(AvailableSettings.BEAN_CONTAINER, new SpringBeanContainer(beanFactoryPostProcessor));
  * </pre>
  *
  * Please note that Spring's {@link LocalSessionFactoryBean} is an immediate alternative

@@ -81,7 +81,7 @@ class ConfigurationClassEnhancer {
 
 	private static final ConditionalCallbackFilter CALLBACK_FILTER = new ConditionalCallbackFilter(CALLBACKS);
 
-	private static final String BEAN_FACTORY_FIELD = "$$beanFactory";
+	private static final String BEAN_FACTORY_FIELD = "$$beanFactoryPostProcessor";
 
 
 	private static final Log logger = LogFactory.getLog(ConfigurationClassEnhancer.class);

@@ -35,7 +35,7 @@ public class SimpleConstructorNamespaceHandlerTests {
 	public void simpleValue() throws Exception {
 		DefaultListableBeanFactory beanFactory = createFactory("simpleConstructorNamespaceHandlerTests.xml");
 		String name = "simple";
-		//		beanFactory.getBean("simple1", DummyBean.class);
+		//		beanFactoryPostProcessor.getBean("simple1", DummyBean.class);
 		DummyBean nameValue = beanFactory.getBean(name, DummyBean.class);
 		assertEquals("simple", nameValue.getValue());
 	}
@@ -44,7 +44,7 @@ public class SimpleConstructorNamespaceHandlerTests {
 	public void simpleRef() throws Exception {
 		DefaultListableBeanFactory beanFactory = createFactory("simpleConstructorNamespaceHandlerTests.xml");
 		String name = "simple-ref";
-		//		beanFactory.getBean("name-value1", TestBean.class);
+		//		beanFactoryPostProcessor.getBean("name-value1", TestBean.class);
 		DummyBean nameValue = beanFactory.getBean(name, DummyBean.class);
 		assertEquals(beanFactory.getBean("name"), nameValue.getValue());
 	}
@@ -53,7 +53,7 @@ public class SimpleConstructorNamespaceHandlerTests {
 	public void nameValue() throws Exception {
 		DefaultListableBeanFactory beanFactory = createFactory("simpleConstructorNamespaceHandlerTests.xml");
 		String name = "name-value";
-		//		beanFactory.getBean("name-value1", TestBean.class);
+		//		beanFactoryPostProcessor.getBean("name-value1", TestBean.class);
 		TestBean nameValue = beanFactory.getBean(name, TestBean.class);
 		assertEquals(name, nameValue.getName());
 		assertEquals(10, nameValue.getAge());

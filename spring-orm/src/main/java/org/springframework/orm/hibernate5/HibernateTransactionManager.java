@@ -374,7 +374,7 @@ public class HibernateTransactionManager extends AbstractPlatformTransactionMana
 			throw new IllegalArgumentException("Property 'sessionFactory' is required");
 		}
 		if (this.entityInterceptor instanceof String && this.beanFactory == null) {
-			throw new IllegalArgumentException("Property 'beanFactory' is required for 'entityInterceptorBeanName'");
+			throw new IllegalArgumentException("Property 'beanFactoryPostProcessor' is required for 'entityInterceptorBeanName'");
 		}
 
 		// Check for SessionFactory's DataSource.

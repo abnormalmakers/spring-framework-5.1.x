@@ -237,8 +237,10 @@ class ConfigurationClassParser {
 		}
 
 		// Recursively process the configuration class and its superclass hierarchy.
+		/** 递归过程的配置类及其超类的层次结构。 **/
 		SourceClass sourceClass = asSourceClass(configClass);
 		do {
+			/** 这个方法获取到配置类的 @ComponentScan 注解信息 ，完成包扫描 **/
 			sourceClass = doProcessConfigurationClass(configClass, sourceClass);
 		}
 		while (sourceClass != null);
@@ -260,6 +262,7 @@ class ConfigurationClassParser {
 
 		if (configClass.getMetadata().isAnnotated(Component.class.getName())) {
 			// Recursively process any member (nested) classes first
+			/** 处理内部类 **/
 			processMemberClasses(configClass, sourceClass);
 		}
 
@@ -277,6 +280,7 @@ class ConfigurationClassParser {
 		}
 
 		// Process any @ComponentScan annotations
+		/** 得到配置类上的所有 ComponentScan 以及其中的所有属性 **/
 		Set<AnnotationAttributes> componentScans = AnnotationConfigUtils.attributesForRepeatable(
 				sourceClass.getMetadata(), ComponentScans.class, ComponentScan.class);
 		if (!componentScans.isEmpty() &&

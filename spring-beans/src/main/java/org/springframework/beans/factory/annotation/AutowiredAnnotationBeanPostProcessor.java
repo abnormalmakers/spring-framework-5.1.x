@@ -523,7 +523,7 @@ public class AutowiredAnnotationBeanPostProcessor extends InstantiationAwareBean
 	protected <T> Map<String, T> findAutowireCandidates(Class<T> type) throws BeansException {
 		if (this.beanFactory == null) {
 			throw new IllegalStateException("No BeanFactory configured - " +
-					"override the getBeanOfType method or specify the 'beanFactory' property");
+					"override the getBeanOfType method or specify the 'beanFactoryPostProcessor' property");
 		}
 		return BeanFactoryUtils.beansOfTypeIncludingAncestors(this.beanFactory, type);
 	}

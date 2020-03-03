@@ -83,7 +83,7 @@ public class XmlBeanCollectionTests {
 
 	@Test
 	public void testRefSubelement() throws Exception {
-		//assertTrue("5 beans in reftypes, not " + this.beanFactory.getBeanDefinitionCount(), this.beanFactory.getBeanDefinitionCount() == 5);
+		//assertTrue("5 beans in reftypes, not " + this.beanFactoryPostProcessor.getBeanDefinitionCount(), this.beanFactoryPostProcessor.getBeanDefinitionCount() == 5);
 		TestBean jen = (TestBean) this.beanFactory.getBean("jenny");
 		TestBean dave = (TestBean) this.beanFactory.getBean("david");
 		assertTrue(jen.getSpouse() == dave);

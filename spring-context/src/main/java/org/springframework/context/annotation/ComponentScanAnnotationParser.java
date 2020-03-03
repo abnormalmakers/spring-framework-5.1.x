@@ -129,6 +129,7 @@ class ComponentScanAnnotationParser {
 				return declaringClass.equals(className);
 			}
 		});
+		/*** 扫描 basePackage , 并将需要交给 Spring 管理的类 注册为 BeanDefinition */
 		return scanner.doScan(StringUtils.toStringArray(basePackages));
 	}
 

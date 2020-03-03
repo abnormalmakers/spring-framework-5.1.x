@@ -610,7 +610,7 @@ class GroovyBeanDefinitionReaderTests {
 			//Test more verbose method
 			mcBain("mcBain"){
 				bean ->
-				bean.factoryBean="beanFactory"
+				bean.factoryBean="beanFactoryPostProcessor"
 				bean.factoryMethod="newInstance"
 
 			}

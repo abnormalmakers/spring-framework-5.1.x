@@ -267,13 +267,18 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 	 * but rather leaves this up to the caller.
 	 * @param basePackages the packages to check for annotated classes
 	 * @return set of beans registered if any for tooling registration purposes (never {@code null})
+	 *
+	 * 此方法完成 basePackage 扫描， 并将 basePackage 下所有的 .java文件换为 BeanDefinition 类型
+	 * 最后调用 registerBeanDefinition(definitionHolder, this.registry); 方法 将 BeanDefinition 注册进 BeanDefinitionMap中
 	 */
 	protected Set<BeanDefinitionHolder> doScan(String... basePackages) {
 		Assert.notEmpty(basePackages, "At least one base package must be specified");
 		Set<BeanDefinitionHolder> beanDefinitions = new LinkedHashSet<>();
 		for (String basePackage : basePackages) {
+			/** 扫描 basePackage 路径下的所有 .java文件 ，并转换为 BeanDefinition 类型**/
 			Set<BeanDefinition> candidates = findCandidateComponents(basePackage);
 			for (BeanDefinition candidate : candidates) {
+				/** 解析 Scope 属性**/
 				ScopeMetadata scopeMetadata = this.scopeMetadataResolver.resolveScopeMetadata(candidate);
 				candidate.setScope(scopeMetadata.getScopeName());
 				String beanName = this.beanNameGenerator.generateBeanName(candidate, this.registry);
@@ -288,6 +293,7 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 					definitionHolder =
 							AnnotationConfigUtils.applyScopedProxyMode(scopeMetadata, definitionHolder, this.registry);
 					beanDefinitions.add(definitionHolder);
+					/** 把开发者交给 Spring 管理的类 注册为 BeanDefinition 对象并封装进 beanDefinitionMap 中**/
 					registerBeanDefinition(definitionHolder, this.registry);
 				}
 			}

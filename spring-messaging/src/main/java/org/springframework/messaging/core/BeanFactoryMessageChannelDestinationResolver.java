@@ -52,7 +52,7 @@ public class BeanFactoryMessageChannelDestinationResolver
 	 * @param beanFactory the bean factory to perform lookups against
 	 */
 	public BeanFactoryMessageChannelDestinationResolver(BeanFactory beanFactory) {
-		Assert.notNull(beanFactory, "beanFactory must not be null");
+		Assert.notNull(beanFactory, "beanFactoryPostProcessor must not be null");
 		this.beanFactory = beanFactory;
 	}
 
