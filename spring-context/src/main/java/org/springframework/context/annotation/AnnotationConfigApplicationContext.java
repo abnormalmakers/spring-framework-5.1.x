@@ -76,6 +76,9 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 		 * 创建一个读取 bean定义 的读取器
 		 */
 		this.reader = new AnnotatedBeanDefinitionReader(this);
+		/**
+		 * 目的是为了能够在外部调用 AnnotationConfigApplicationContext 的 scan 方法
+		 */
 		this.scanner = new ClassPathBeanDefinitionScanner(this);
 	}
 

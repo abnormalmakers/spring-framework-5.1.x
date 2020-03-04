@@ -112,9 +112,20 @@ abstract class ConfigurationClassUtils {
 			}
 		}
 
+		/**
+		 * 判断当前这个类是否加了 Configuration 注解
+		 */
 		if (isFullConfigurationCandidate(metadata)) {
+			/** 如果存在 Configuration 注解， 则为 BeanDefinition 设置 ConfigurationClass 属性为 null **/
 			beanDef.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_FULL);
 		}
+		/**
+		 *  else if 判断是否加了以下注解, 如果加了 Configuration 注解，下边四个不会在判断
+		 *  candidateIndicators.add(Component.class.getName());
+		 * 	candidateIndicators.add(ComponentScan.class.getName());
+		 * 	candidateIndicators.add(Import.class.getName());
+		 * 	candidateIndicators.add(ImportResource.class.getName());
+		 */
 		else if (isLiteConfigurationCandidate(metadata)) {
 			beanDef.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_LITE);
 		}
@@ -168,6 +179,13 @@ abstract class ConfigurationClassUtils {
 		}
 
 		// Any of the typical annotations found?
+		/**
+		 *  candidateIndicators 是一个 Set 集合， 存放了四个注解
+		 *  Component.class.getName()
+		 * 	ComponentScan.class.getName()
+		 * 	Import.class.getName()
+		 * 	ImportResource.class.getName()
+		 */
 		for (String indicator : candidateIndicators) {
 			if (metadata.isAnnotated(indicator)) {
 				return true;

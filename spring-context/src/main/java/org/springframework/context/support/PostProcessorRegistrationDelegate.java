@@ -62,6 +62,7 @@ final class PostProcessorRegistrationDelegate {
 		 * List<BeanFactoryPostProcessor> regularPostProcessors = new ArrayList<>();
 		 * List<BeanDefinitionRegistryPostProcessor> registryProcessors = new ArrayList<>();
 		 * 为什么下边 要定义两个 list？
+		 *  目的是分开存放不同接口类型的 bean 工厂后置处理器
 		 *  BeanDefinitionRegistryPostProcessor extends BeanFactoryPostProcessor
 		 *  BeanDefinitionRegistryPostProcessor 扩展了 BeanFactoryPostProcessor接口，
 		 *  开发者自定义的 BeanFactoryProcessor 可以有两种实现方式，实现 BeanDefinitionRegistryPostProcessor 或者  BeanDefinitionRegistryPostProcessor
@@ -72,6 +73,10 @@ final class PostProcessorRegistrationDelegate {
 			List<BeanFactoryPostProcessor> regularPostProcessors = new ArrayList<>();
 			List<BeanDefinitionRegistryPostProcessor> registryProcessors = new ArrayList<>();
 
+			/** 这里判断自定义的 beanFactoryPostProcessor 实现的是那个接口
+			 *  子接口 BeanDefinitionRegistryPostProcessor 还是 父接口 beanFactoryPostProcessors
+			 *  针对实现的不同接口做不同处理，分别用不同 list 来存放
+			 * **/
 			for (BeanFactoryPostProcessor postProcessor : beanFactoryPostProcessors) {
 				if (postProcessor instanceof BeanDefinitionRegistryPostProcessor) {
 					BeanDefinitionRegistryPostProcessor registryProcessor =
@@ -102,6 +107,10 @@ final class PostProcessorRegistrationDelegate {
 			/**
 			 * 首先,调用实现了 PriorityOrdered接口的 BeanDefinitionRegistryPostProcessors
 			 */
+			/** 根据类型获取 bean 的名字
+			 * 	BeanDefinitionRegistryPostProcessor.class，此时 Spring 内部只有 ConfigurationClassPostProcessor
+			 * 	ConfigurationClassPostProcessor implements  BeanDefinitionRegistryPostProcessor extends BeanFactoryPostProcessor
+			 * **/
 			String[] postProcessorNames =
 					beanFactory.getBeanNamesForType(BeanDefinitionRegistryPostProcessor.class, true, false);
 			/**
@@ -128,6 +137,7 @@ final class PostProcessorRegistrationDelegate {
 			 * */
 			registryProcessors.addAll(currentRegistryProcessors);
 			/**
+			 * 此时，currentRegistryProcessors 列表中就只有 ConfigurationClassPostProcessor 一个类
 			 * 此方法循环所有 BeanDefinitionRegistryPostProcessor 类型，
 			 * 调用 他的扩展方法 postProcessBeanDefinitionRegistry()
 			 */
@@ -172,6 +182,10 @@ final class PostProcessorRegistrationDelegate {
 			}
 
 			// Now, invoke the postProcessBeanFactory callback of all processors handled so far.
+			/**
+			 * 这里调用的是 继承了 BeanFactoryPostProcessor 接口的 bean 工厂后置处理器
+			 * 上边调用的则是 继承了 BeanDefinitionRegistryPostProcessor 接口的 bean 工厂后置处理器
+			 */
 			invokeBeanFactoryPostProcessors(registryProcessors, beanFactory);
 			invokeBeanFactoryPostProcessors(regularPostProcessors, beanFactory);
 		}
@@ -312,12 +326,14 @@ final class PostProcessorRegistrationDelegate {
 
 	/**
 	 * Invoke the given BeanDefinitionRegistryPostProcessor beans.
+	 * 这里调用的是 继承了 BeanDefinitionRegistry 接口的 bean 工厂后置处理器
 	 * 此方法循环所有 BeanDefinitionRegistryPostProcessor 类型，
 	 * 调用 他的扩展方法 postProcessBeanDefinitionRegistry()
 	 */
 	private static void invokeBeanDefinitionRegistryPostProcessors(
 			Collection<? extends BeanDefinitionRegistryPostProcessor> postProcessors, BeanDefinitionRegistry registry) {
 
+		/** 这里正常情况 postProcessors 只有一条数据，即 ConfigurationClassPostProcessor **/
 		for (BeanDefinitionRegistryPostProcessor postProcessor : postProcessors) {
 			postProcessor.postProcessBeanDefinitionRegistry(registry);
 		}
@@ -325,6 +341,9 @@ final class PostProcessorRegistrationDelegate {
 
 	/**
 	 * Invoke the given BeanFactoryPostProcessor beans.
+	 * 这里调用的是 继承了 BeanFactoryPostProcessor 接口的 bean 工厂后置处理器
+	 * 此方法循环所有 BeanFactoryPostProcessor 类型，
+	 * 调用 他的扩展方法 postProcessBeanFactory()
 	 */
 	private static void invokeBeanFactoryPostProcessors(
 			Collection<? extends BeanFactoryPostProcessor> postProcessors, ConfigurableListableBeanFactory beanFactory) {

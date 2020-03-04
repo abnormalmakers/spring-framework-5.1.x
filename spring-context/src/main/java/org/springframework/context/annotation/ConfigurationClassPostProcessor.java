@@ -261,10 +261,14 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	public void processConfigBeanDefinitions(BeanDefinitionRegistry registry) {
 		List<BeanDefinitionHolder> configCandidates = new ArrayList<>();
 		/**
-		 * 从容器中获取所有注册的 bean 的名字
+		 * 从容器中获取当前所有注册的 bean 的名字
 		 */
 		String[] candidateNames = registry.getBeanDefinitionNames();
 
+		/**
+		 * 下边的这个循环是为了找出 需要解析的类
+		 * 现在只有 AppConfig 需要解析，也就是配置类需要解析
+		 */
 		for (String beanName : candidateNames) {
 			/** 拿出所有 BeanDefinition */
 			BeanDefinition beanDef = registry.getBeanDefinition(beanName);
@@ -274,7 +278,14 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 					logger.debug("Bean definition has already been processed as a configuration class: " + beanDef);
 				}
 			}
-			/** 判断 BeanDefinition 是否加了 @Service @Confifuration 注解 */
+			/** 判断 BeanDefinition 是否加了什么注解
+			 *  如果加了 Configuration 注解 ，下边 4 个注解不会在判断
+			 *  如果没加 Configuration 注解，才会判断
+			 *  candidateIndicators.add(Component.class.getName());
+			 * 	candidateIndicators.add(ComponentScan.class.getName());
+			 * 	candidateIndicators.add(Import.class.getName());
+			 * 	candidateIndicators.add(ImportResource.class.getName());
+			 * */
 			else if (ConfigurationClassUtils.checkConfigurationClassCandidate(beanDef, this.metadataReaderFactory)) {
 				configCandidates.add(new BeanDefinitionHolder(beanDef, beanName));
 			}

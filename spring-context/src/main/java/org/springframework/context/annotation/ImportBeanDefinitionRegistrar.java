@@ -46,6 +46,9 @@ import org.springframework.core.type.AnnotationMetadata;
  * @see Import
  * @see ImportSelector
  * @see Configuration
+ *  这个接口也是 Spring 的扩展点之一， 同 BeanFactoryPostProcessor 一样
+ *  这个接口也可以参与 beanfactory 的建设
+ *  可以往 BeanDefinitionMap 中添加 BeanDefinition
  */
 public interface ImportBeanDefinitionRegistrar {
 

@@ -287,6 +287,7 @@ class ConfigurationClassParser {
 				!this.conditionEvaluator.shouldSkip(sourceClass.getMetadata(), ConfigurationPhase.REGISTER_BEAN)) {
 			for (AnnotationAttributes componentScan : componentScans) {
 				// The config class is annotated with @ComponentScan -> perform the scan immediately
+				/** 在这儿进行包扫描，扫描普通类，注册 BeanDefinition ， put beanDefinitionMap **/
 				Set<BeanDefinitionHolder> scannedBeanDefinitions =
 						this.componentScanParser.parse(componentScan, sourceClass.getMetadata().getClassName());
 				// Check the set of scanned definitions for any further config classes and parse recursively if needed
@@ -303,6 +304,11 @@ class ConfigurationClassParser {
 		}
 
 		// Process any @Import annotations
+		/** 处理 @Import 注解	 mybatis 中的 @MapperScan 注解就是在这里
+		 *  @Import 可以处理 普通类
+		 *  		可以处理 ImportSelector
+		 *  		可以处理 ImportBeanDefinitionRegistrar
+		 * **/
 		processImports(configClass, sourceClass, getImports(sourceClass), true);
 
 		// Process any @ImportResource annotations

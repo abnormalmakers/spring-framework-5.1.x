@@ -701,6 +701,11 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		}
 
 		// Register default environment beans.
+		/**
+		 * 意思是自定义 Bean 中如果没有 "SystemProperties" 和 "SystemEnvironment" 的 Bean
+		 * 则注册两个 bean ，key 为 "SystemProperties" 和 "SystemEnvironment"， Value 为 Map
+		 * 这两个 Bean 就是一些系统配置和系统环境信息
+		 **/
 		if (!beanFactory.containsLocalBean(ENVIRONMENT_BEAN_NAME)) {
 			beanFactory.registerSingleton(ENVIRONMENT_BEAN_NAME, getEnvironment());
 		}
@@ -734,6 +739,8 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		 *  通过 app.addBeanFactoryPostProcessor(new MyBeanFactoryPostProcessor()); 手动添加进去
 		 *  然后在刷新容器，这样才能通过 getBeanFactoryPostProcessors() 获取到
 		 *  在这里会把所有需要交给 Spring 管理的对象 封装为 BeanDefinition,然后放入 BeanDefinitionMap 中
+		 *  getBeanFactoryPostProcessors() 是获取一个 list
+		 *  这个 list 是在 AbstractApplicationContext 中被定义，也就是当前这个类
 		 * */
 		PostProcessorRegistrationDelegate.invokeBeanFactoryPostProcessors(beanFactory, getBeanFactoryPostProcessors());
 
