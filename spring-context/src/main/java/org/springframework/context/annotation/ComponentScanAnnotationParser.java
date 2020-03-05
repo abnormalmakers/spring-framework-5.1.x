@@ -72,7 +72,10 @@ class ComponentScanAnnotationParser {
 		this.registry = registry;
 	}
 
-
+	/**
+	 * 这个方法主要完成包信息的扫描
+	 * 在最后调用 doScan() 方法扫描类
+	 */
 	public Set<BeanDefinitionHolder> parse(AnnotationAttributes componentScan, final String declaringClass) {
 		/**
 		 * Spring 在这里自己 new 了一个 ClassPathBeanDefinitionScanner，跟在构造方法里实例化出的那个 scanner 是同一个类
