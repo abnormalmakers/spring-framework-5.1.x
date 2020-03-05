@@ -286,6 +286,8 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 				String beanName = this.beanNameGenerator.generateBeanName(candidate, this.registry);
 				if (candidate instanceof AbstractBeanDefinition) {
 					/** 如果当前类是 AbstractBeanDefinition 的默认类，
+					 * 正常情况下一定会尽这个判断，因为在 findCandidateComponents 方法内部，new 了一个 ScannedGenericBeanDefinition
+					 * ScannedGenericBeanDefinition 是 AbstractBeanDefinition的子类，所以一定会进这个判断
 					 * 则为他的属性设置默认值
 					 *  Lazy、init、destroy
 					 * */
