@@ -524,7 +524,12 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 			prepareRefresh();
 
 			// Tell the subclass to refresh the internal bean factory.
-			/**返回一个 factory，要对工厂进行初始化*/
+			/**返回一个 factory，要对工厂进行初始化
+			 *  obtainFreshBeanFactory方法里边调用 getFactory()
+			 *  由于 getFactory() 是一个抽象方法，所以是调用它的子类 GenericApplicationContext 的方法
+			 *  返回 this.beanFactory
+			 *  所以 getFactory() 返回的是 DefaultListableBeanFactory
+			 * */
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
 			// Prepare the bean factory for use in this context.
