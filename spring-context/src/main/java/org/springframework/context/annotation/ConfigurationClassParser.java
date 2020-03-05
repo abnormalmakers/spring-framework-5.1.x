@@ -163,7 +163,16 @@ class ConfigurationClassParser {
 		for (BeanDefinitionHolder holder : configCandidates) {
 			BeanDefinition bd = holder.getBeanDefinition();
 			try {
+				/**
+				 * 根据不同 BeanDefinition 的类型做不同处理，一般会调用 ConfigurationClassParser#parse
+				 */
 				if (bd instanceof AnnotatedBeanDefinition) {
+					/**
+					 * 解析注解对象，并把解析出来的 BeanDefinition 放入 map，但这里的 BeanDefinition 只是普通的 bd
+					 * 什么是不普通的？
+					 * 比如 @Bean 和各种 BeanFactoryPostProcessor 得到的 bean 不在这里put
+					 * 但也是在这里解析，只是不会 put 进 beanDefinitionMap
+					 */
 					parse(((AnnotatedBeanDefinition) bd).getMetadata(), holder.getBeanName());
 				}
 				else if (bd instanceof AbstractBeanDefinition && ((AbstractBeanDefinition) bd).hasBeanClass()) {
@@ -195,6 +204,10 @@ class ConfigurationClassParser {
 		processConfigurationClass(new ConfigurationClass(clazz, beanName));
 	}
 
+	/**
+	 *  ConfigurationClass 封装了 metadata，resource，beanName
+	 *  其中 resource 就是对 beanDefinition 的描述 ---> this.description = (description != null ? description : "");
+	 */
 	protected final void parse(AnnotationMetadata metadata, String beanName) throws IOException {
 		processConfigurationClass(new ConfigurationClass(metadata, beanName));
 	}
@@ -218,7 +231,9 @@ class ConfigurationClassParser {
 		if (this.conditionEvaluator.shouldSkip(configClass.getMetadata(), ConfigurationPhase.PARSE_CONFIGURATION)) {
 			return;
 		}
-
+		/**
+		 * 处理 Imported ,就是说当前这个类有木有被别的类 import
+		 */
 		ConfigurationClass existingClass = this.configurationClasses.get(configClass);
 		if (existingClass != null) {
 			if (configClass.isImported()) {
@@ -267,6 +282,9 @@ class ConfigurationClassParser {
 		}
 
 		// Process any @PropertySource annotations
+		/**
+		 * 处理  @PropertySource 注解
+		 */
 		for (AnnotationAttributes propertySource : AnnotationConfigUtils.attributesForRepeatable(
 				sourceClass.getMetadata(), PropertySources.class,
 				org.springframework.context.annotation.PropertySource.class)) {
@@ -291,6 +309,9 @@ class ConfigurationClassParser {
 				Set<BeanDefinitionHolder> scannedBeanDefinitions =
 						this.componentScanParser.parse(componentScan, sourceClass.getMetadata().getClassName());
 				// Check the set of scanned definitions for any further config classes and parse recursively if needed
+				/**
+				 * 检查扫描出的类是否还有 @Configuration 注解
+				 */
 				for (BeanDefinitionHolder holder : scannedBeanDefinitions) {
 					BeanDefinition bdCand = holder.getBeanDefinition().getOriginatingBeanDefinition();
 					if (bdCand == null) {

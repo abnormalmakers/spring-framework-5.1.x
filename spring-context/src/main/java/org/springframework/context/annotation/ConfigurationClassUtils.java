@@ -113,10 +113,11 @@ abstract class ConfigurationClassUtils {
 		}
 
 		/**
-		 * 判断当前这个类是否加了 Configuration 注解
+		 * if  isFullConfigurationCandidate(metadata) 判断当前这个类是否加了 Configuration 注解,如果是 返回true
+		 * 如果存在 Spring 则把此类看作一个全注解类
 		 */
 		if (isFullConfigurationCandidate(metadata)) {
-			/** 如果存在 Configuration 注解， 则为 BeanDefinition 设置 ConfigurationClass 属性为 null **/
+			/** 如果存在 Configuration 注解， 则为 BeanDefinition 设置 CONFIGURATION_CLASS_ATTRIBUTE 属性为 full **/
 			beanDef.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_FULL);
 		}
 		/**
@@ -125,8 +126,11 @@ abstract class ConfigurationClassUtils {
 		 * 	candidateIndicators.add(ComponentScan.class.getName());
 		 * 	candidateIndicators.add(Import.class.getName());
 		 * 	candidateIndicators.add(ImportResource.class.getName());
+		 * 	如果是 返回true
+		 * 	如果不存在 @Configuration, Spring 则把此类看作一个部分注解类
 		 */
 		else if (isLiteConfigurationCandidate(metadata)) {
+			/** 如果不存在 Configuration 注解但存在以上注解， 则为 BeanDefinition 设置 CONFIGURATION_CLASS_ATTRIBUTE 属性为 lite **/
 			beanDef.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_LITE);
 		}
 		else {

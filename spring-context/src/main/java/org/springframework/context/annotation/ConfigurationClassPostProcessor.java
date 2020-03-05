@@ -264,7 +264,9 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		 */
 		List<BeanDefinitionHolder> configCandidates = new ArrayList<>();
 		/**
-		 * 从容器中获取当前所有注册的 bean 的名字
+		 * 从容器中获取当前所有注册的 BeanDefinition 的名字
+		 * 这里只有 Spring 在实例化读取器的时候存放的那几个 BeanDefinition
+		 * 以及 register() 方法注册的类转化为的 BeanDefinition
 		 */
 		String[] candidateNames = registry.getBeanDefinitionNames();
 
@@ -273,7 +275,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		 * 现在只有 AppConfig 需要解析，也就是配置类需要解析
 		 */
 		for (String beanName : candidateNames) {
-			/** 拿出所有 BeanDefinition */
+			/** 循环拿出所有 BeanDefinition */
 			BeanDefinition beanDef = registry.getBeanDefinition(beanName);
 			if (ConfigurationClassUtils.isFullConfigurationClass(beanDef) ||
 					ConfigurationClassUtils.isLiteConfigurationClass(beanDef)) {
@@ -281,13 +283,18 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 					logger.debug("Bean definition has already been processed as a configuration class: " + beanDef);
 				}
 			}
-			/** 判断 BeanDefinition 是否加了什么注解
+			/** ConfigurationClassUtils.checkConfigurationClassCandidate(beanDef, this.metadataReaderFactory)
+			 *  判断 BeanDefinition 是否加了什么注解
 			 *  如果加了 Configuration 注解 ，下边 4 个注解不会在判断
 			 *  如果没加 Configuration 注解，才会判断
 			 *  candidateIndicators.add(Component.class.getName());
 			 * 	candidateIndicators.add(ComponentScan.class.getName());
 			 * 	candidateIndicators.add(Import.class.getName());
 			 * 	candidateIndicators.add(ImportResource.class.getName());
+			 * 	如果当前类存在以上注解，则将它放进 list --> configCandidates 中
+			 * 	从 checkConfigurationClassCandidate 的判断可以解释
+			 * 	为什么配置类 AppConfig 不管有没有加上 @Configuration 注解都会解析
+			 * 	这里就可以判断当前解析的类是否是个 全注解 的类
 			 * */
 			else if (ConfigurationClassUtils.checkConfigurationClassCandidate(beanDef, this.metadataReaderFactory)) {
 				configCandidates.add(new BeanDefinitionHolder(beanDef, beanName));
@@ -308,6 +315,12 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 
 		// Detect any custom bean name generation strategy supplied through the enclosing application context
 		SingletonBeanRegistry sbr = null;
+		/**
+		 * 判断 BeanDefinitionRegistry 是否是 SingletonBeanRegistry 子类
+		 *  当前传入的 registry 是 DefaultListableBeanFactory，是 BeanDefinitionRegistry 和 SingletonBeanRegistry 共同的子类
+		 *  但 BeanDefinitionRegistry 和 SingletonBeanRegistry 不存在继承实现关系
+		 *  所以需要强转为 BeanDefinitionRegistry
+		 */
 		if (registry instanceof SingletonBeanRegistry) {
 			sbr = (SingletonBeanRegistry) registry;
 			if (!this.localBeanNameGeneratorSet) {
@@ -329,6 +342,13 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 				this.metadataReaderFactory, this.problemReporter, this.environment,
 				this.resourceLoader, this.componentScanBeanNameGenerator, registry);
 
+		/**
+		 * 实例化两个 Set , 对 configCandidates 进行去重
+		 * 因为如果开发者自定义了 MyBeanFactoryPostProcessor 并实现了 BeanDefinitionRegistry ,可能有配置类重复的情况
+		 * 比如一个 AppConfig 被 register 了两次
+		 * Spring 内部提供的 BeanPostProcessor 就是当前这个 ConfigurationClassPostProcessor,不会重复
+		 * alreadyParsed 用于判断是否处理过
+		 */
 		Set<BeanDefinitionHolder> candidates = new LinkedHashSet<>(configCandidates);
 		Set<ConfigurationClass> alreadyParsed = new HashSet<>(configCandidates.size());
 		do {
