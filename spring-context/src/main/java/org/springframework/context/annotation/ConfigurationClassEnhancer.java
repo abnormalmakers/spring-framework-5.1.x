@@ -74,6 +74,7 @@ class ConfigurationClassEnhancer {
 
 	// The callbacks to use. Note that these callbacks must be stateless.
 	private static final Callback[] CALLBACKS = new Callback[] {
+			/** 增强方法 **/
 			new BeanMethodInterceptor(),
 			new BeanFactoryAwareMethodInterceptor(),
 			NoOp.INSTANCE
@@ -95,6 +96,9 @@ class ConfigurationClassEnhancer {
 	 * @return the enhanced subclass
 	 */
 	public Class<?> enhance(Class<?> configClass, @Nullable ClassLoader classLoader) {
+		/** if 判断配置类是否有被代理过
+		 * 	 判断依据就是 配置类有没有实现这个 EnhancedConfiguration 接口
+		 * **/
 		if (EnhancedConfiguration.class.isAssignableFrom(configClass)) {
 			if (logger.isDebugEnabled()) {
 				logger.debug(String.format("Ignoring request to enhance %s as it has " +
@@ -106,6 +110,9 @@ class ConfigurationClassEnhancer {
 			}
 			return configClass;
 		}
+		/**
+		 * 如果没有，就需要 cglib 代理
+		 */
 		Class<?> enhancedClass = createClass(newEnhancer(configClass, classLoader));
 		if (logger.isTraceEnabled()) {
 			logger.trace(String.format("Successfully enhanced %s; enhanced class name is: %s",
@@ -119,11 +126,26 @@ class ConfigurationClassEnhancer {
 	 */
 	private Enhancer newEnhancer(Class<?> configSuperClass, @Nullable ClassLoader classLoader) {
 		Enhancer enhancer = new Enhancer();
+		/** 增强父类 */
 		enhancer.setSuperclass(configSuperClass);
+		/** 增强借口，表示一个类已经被增强了 */
 		enhancer.setInterfaces(new Class<?>[] {EnhancedConfiguration.class});
 		enhancer.setUseFactory(false);
 		enhancer.setNamingPolicy(SpringNamingPolicy.INSTANCE);
+		/**
+		 * BeanFactoryAwareGeneratorStrategy 是一个生成策略
+		 * 主要是为生成得 CGLIB 类中添加成员变量 $$beanFactory
+		 * 同时基于 EnhancedConfiguration 接口的父接口 BeanFactoryAware 的 setBeanFactory 方法
+		 * 设置此变量的值为当前 context 中的 beanFactory ，这样一来我们这个 cglib 代理对象就有了 beanFactory
+		 * 有了 beanFactory 就能获得对象，而不用去通过方法获得对象了，因为通过方法活的对象不能控制整个过程
+		 * 该 beanFactory 的作用是在 this 调用时拦截该调用，并在 beanFactory 中获得目标 bean
+		 */
 		enhancer.setStrategy(new BeanFactoryAwareGeneratorStrategy(classLoader));
+		/**
+		 * 过滤方法
+		 * @Configuration 的作用就体现在这里，配置类加上 @Configuration 注解后
+		 * 不会每次都去 new 对象，会先去尝试获取
+		 */
 		enhancer.setCallbackFilter(CALLBACK_FILTER);
 		enhancer.setCallbackTypes(CALLBACK_FILTER.getCallbackTypes());
 		return enhancer;
@@ -316,6 +338,10 @@ class ConfigurationClassEnhancer {
 		public Object intercept(Object enhancedConfigInstance, Method beanMethod, Object[] beanMethodArgs,
 					MethodProxy cglibMethodProxy) throws Throwable {
 
+			/**
+			 * enhancedConfigInstance 目标对象
+			 * 通过 enhancedConfigInstance 中生成的成员变量 $$beanFactory 获得 beanFactory
+			 */
 			ConfigurableBeanFactory beanFactory = getBeanFactory(enhancedConfigInstance);
 			String beanName = BeanAnnotationHelper.determineBeanNameFor(beanMethod);
 
@@ -346,6 +372,40 @@ class ConfigurationClassEnhancer {
 				}
 			}
 
+			/**
+			 * 判断执行的方法和调用的方法是不是同一个方法
+			 * 也就是说判断
+			 * 是 new 还是 get
+			 *  isCurrentlyInvokedFactoryMethod(beanMethod)
+			 *  	true： invokeSuper ---- new
+			 *  	false： $$beanFactory.getBean() ---- get
+			 *
+			 * example:
+			 *  @Bean
+			 *  public UserService userService(){
+			 *  	return new UserService();
+			 *  }
+			 *  @Bean
+			 *  public OrderService oderService(){
+			 *    	userService()
+			 *  	return new OrderService();
+			 *  }
+			 *
+			 *  如果配置类加了 @Configuration ， AppConfig 会被代理，如下
+			 *  public class $ProxAppConfig extends Appconfig implements EnhancedConfiguration{
+			 * 		private BeanFactory $$beanFactory
+			 * 		....
+			 * 	}
+			 *  那么实际效果如下
+			 *  @Bean
+			 *  public UserService userService(){
+			 *  	if(isCurrentlyInvokedFactoryMethod(beanMethod)){
+			 *  		proxy.invokeSuper();	//即 new 了一个 bean
+			 *  	}else{
+			 *			$$beanFactory.getBean(UserService.class); //即 get 了一个 bean
+			 *  	}
+			 *  }
+			 */
 			if (isCurrentlyInvokedFactoryMethod(beanMethod)) {
 				// The factory is calling the bean method in order to instantiate and register the bean
 				// (i.e. via a getBean() call) -> invoke the super implementation of the method to actually

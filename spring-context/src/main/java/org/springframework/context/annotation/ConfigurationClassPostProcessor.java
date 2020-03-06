@@ -250,7 +250,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 			// Simply call processConfigurationClasses lazily at this point then.
 			processConfigBeanDefinitions((BeanDefinitionRegistry) beanFactory);
 		}
-		/** 产生 cglib 代理 */
+		/** 给加了 @Configuration 的配置类产生 cglib 代理 */
 		enhanceConfigurationClasses(beanFactory);
 		beanFactory.addBeanPostProcessor(new ImportAwareBeanPostProcessor(beanFactory));
 	}
@@ -375,7 +375,9 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 						registry, this.sourceExtractor, this.resourceLoader, this.environment,
 						this.importBeanNameGenerator, parser.getImportRegistry());
 			}
-			/**	注册 ImportBeanDefinitionRegistrar 和 ImportSelector 以及 import 的普通类*/
+			/**	注册 ImportBeanDefinitionRegistrar 和 ImportSelector 以及 import 的普通类 到 BeanDefinitionMap
+			 *  注册 @Bean 注解标注的类到  BeanDefinitionMap
+			 * */
 			this.reader.loadBeanDefinitions(configClasses);
 			alreadyParsed.addAll(configClasses);
 

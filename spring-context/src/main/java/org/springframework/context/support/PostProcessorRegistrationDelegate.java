@@ -202,9 +202,12 @@ final class PostProcessorRegistrationDelegate {
 			 * 这里调用的是 继承了 BeanFactoryPostProcessor 接口的 bean 工厂后置处理器
 			 * 上边调用的则是 继承了 BeanDefinitionRegistryPostProcessor 接口的 bean 工厂后置处理器
 			 */
-			/** 调用 BeanDefinitionRegistryPostProcessor 的 postProcessBeanFactory 方法 **/
+			/** 调用 BeanDefinitionRegistryPostProcessor 的 postProcessBeanFactory 方法
+			 * @Configuration 注解的作用，配置类采用 cglib 代理，就在这个方法里完成
+			 * **/
 			invokeBeanFactoryPostProcessors(registryProcessors, beanFactory);
-			/** 调用 BeanFactoryPostProcessor 的 postProcessBeanFactory 方法 **/
+
+			/** 调用开发者自定义的 BeanFactoryPostProcessor 的 postProcessBeanFactory 方法 **/
 			invokeBeanFactoryPostProcessors(regularPostProcessors, beanFactory);
 		}
 

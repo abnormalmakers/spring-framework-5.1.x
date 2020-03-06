@@ -141,6 +141,9 @@ class ConfigurationClassBeanDefinitionReader {
 			registerBeanDefinitionForImportedConfigurationClass(configClass);
 		}
 		for (BeanMethod beanMethod : configClass.getBeanMethods()) {
+			/**
+			 * 循环注册 @Bean
+			 */
 			loadBeanDefinitionsForBeanMethod(beanMethod);
 		}
 
