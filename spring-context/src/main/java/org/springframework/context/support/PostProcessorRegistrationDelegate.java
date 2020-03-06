@@ -111,8 +111,10 @@ final class PostProcessorRegistrationDelegate {
 			 *  为什么 Spring 要定义两个  List<BeanDefinitionRegistryPostProcessor> ？
 			 *  因为 上边的  registryProcessors 存放的是开发者自己定义实现的 BeanDefinitionRegistryPostProcessor 接口的类
 			 *  这里的 currentRegistryProcessors 存放的是 Spring 内部自己定义实现了 BeanDefinitionRegistryPostProcessor 接口的类
-			 *  上边已经处理完了开发者自定义的 BeanFactoryPostProcessor , 此时 Spring 自己的 BeanFactoryProcessor 还未注册
-			 *  接下来 Spring 会完成自己的 BeanFactoryProcessor
+			 *  上边已经处理完了开发者自定义的 BeanDefinitionRegistryPostProcessor 的 postProcessBeanDefinitionRegistry 方法,
+			 *  注意，还有一个 postProcessorBeanFactory 方法未执行
+			 *  此时 Spring 自己的 BeanDefinitionRegistryPostProcessor 还未注册
+			 *  接下来 Spring 会完成自己的 BeanDefinitionRegistryPostProcessor
 			 */
 			List<BeanDefinitionRegistryPostProcessor> currentRegistryProcessors = new ArrayList<>();
 
@@ -147,7 +149,7 @@ final class PostProcessorRegistrationDelegate {
 			}
 			sortPostProcessors(currentRegistryProcessors, beanFactory);
 			/** 合并list  registryProcessors 、 currentRegistryProcessors
-			 *  即开发者自定义的 BeanFactoryPostProcessor 和 Spring 内部的 BeanFactoryPostProcessor
+			 *  即开发者自定义的 BeanDefinitionRegistryPostProcessor 和 Spring 内部的 BeanDefinitionRegistryPostProcessor
 			 * */
 			registryProcessors.addAll(currentRegistryProcessors);
 			/**
@@ -200,7 +202,9 @@ final class PostProcessorRegistrationDelegate {
 			 * 这里调用的是 继承了 BeanFactoryPostProcessor 接口的 bean 工厂后置处理器
 			 * 上边调用的则是 继承了 BeanDefinitionRegistryPostProcessor 接口的 bean 工厂后置处理器
 			 */
+			/** 调用 BeanDefinitionRegistryPostProcessor 的 postProcessBeanFactory 方法 **/
 			invokeBeanFactoryPostProcessors(registryProcessors, beanFactory);
+			/** 调用 BeanFactoryPostProcessor 的 postProcessBeanFactory 方法 **/
 			invokeBeanFactoryPostProcessors(regularPostProcessors, beanFactory);
 		}
 
