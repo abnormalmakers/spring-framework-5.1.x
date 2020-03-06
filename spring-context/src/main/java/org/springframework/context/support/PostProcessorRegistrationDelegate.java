@@ -51,7 +51,20 @@ final class PostProcessorRegistrationDelegate {
 	private PostProcessorRegistrationDelegate() {
 	}
 
-
+	/**
+	 * 此方法就是取出实现了 BeanFactoryPostProcessor 以及 BeanDefinitionRegistryPostProcessor 接口的类
+	 * 如果开发者没有自定义类实现以上接口，那么 Spring 此时只有一个类实现了以上接口 ConfigurationClassPostProcessor
+	 * 因为 BeanDefinitionRegistryPostProcessor 是 BeanFactoryPostProcessor 的子接口
+	 * 所以 Spring 用 regularPostProcessors ， registryProcessors 两个 List 来分别存储
+	 * 实现了 BeanDefinitionRegistryPostProcessor，BeanFactoryPostProcessor 的类，
+	 * 先判断是否是 BeanDefinitionRegistryPostProcessor 的子类，如果是，调用实现了 BeanDefinitionRegistryPostProcessor 接口的类的 postProcessBeanDefinitionRegistry 方法，
+	 * 如果不是，那就是实现了父接口 BeanFactoryPostProcessor ，则用 regularPostProcessors 存储，最后统一调用 BeanFactoryPostProcessor 的 postProcessBeanFactory 方法
+	 * 但父接口 BeanFactoryPostProcessor 还有一个方法 postProcessBeanFactory，暂时不会调用
+	 * 所以先用 registryProcessors 把此对象存储起来，方便之后同一调用 postProcessBeanFactory
+	 * 所以 Spring 用 regularPostProcessors ， registryProcessors 两个 List 来分别存储
+	 * @param beanFactory
+	 * @param beanFactoryPostProcessors
+	 */
 	public static void invokeBeanFactoryPostProcessors(
 			ConfigurableListableBeanFactory beanFactory, List<BeanFactoryPostProcessor> beanFactoryPostProcessors) {
 

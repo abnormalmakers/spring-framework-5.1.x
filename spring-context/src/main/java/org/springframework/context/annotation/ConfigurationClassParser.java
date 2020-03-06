@@ -252,14 +252,23 @@ class ConfigurationClassParser {
 		}
 
 		// Recursively process the configuration class and its superclass hierarchy.
-		/** 递归过程的配置类及其超类的层次结构。 **/
+		/** 递归过程的配置类及其超类的层次结构。
+		 * 	拿到当前配置类
+		 * **/
 		SourceClass sourceClass = asSourceClass(configClass);
 		do {
-			/** 这个方法获取到配置类的 @ComponentScan 注解信息 ，完成包扫描 **/
+			/** 这个方法获取到配置类的 @ComponentScan 注解信息 ，完成包扫描 ,并将普通类注册进BeanDefinitionMap
+			 * @Import 导入的类不会在这个方法里注册进 BeanDefinitionMap
+			 * 它会根据 @Import 打入的不同类型做不同处理，
+			 * 然后缓存到不同的变量集合中
+			 * **/
 			sourceClass = doProcessConfigurationClass(configClass, sourceClass);
 		}
 		while (sourceClass != null);
-
+		/** 一个 map，用来存放扫描出来的 Bean
+		 * （注意：这里的 Bean 不是对象，仅仅是 bean 的信息，还没有实例化到这一步）
+		 * 只是先放入一个 map ， 还未完成注册
+		 * */
 		this.configurationClasses.put(configClass, configClass);
 	}
 
@@ -323,12 +332,29 @@ class ConfigurationClassParser {
 				}
 			}
 		}
-
+		/**
+		 * 以上代码完成了 普通类的扫描，并且已经放入了map
+		 * 何为普通类，即加了 @Component 注解的类
+		 */
 		// Process any @Import annotations
 		/** 处理 @Import 注解	 mybatis 中的 @MapperScan 注解就是在这里
 		 *  @Import 可以处理 普通类
 		 *  		可以处理 ImportSelector
 		 *  		可以处理 ImportBeanDefinitionRegistrar
+		 * 如果这儿有 @Import ，会把 @Import 中的值拿出来，是一个类
+		 * 比如 @Import(Xxx.Class) ,便把 Xxx 传进去进行解析, Xxx 的值就是通过 getImports(sourceClass) 获取到的
+		 * 在传入的过程中如果发现是一个 ImportSelector, 那么会回调 Selector 的方法
+		 *  Selector ---> String[] selectImports(AnnotationMetadata importingClassMetadata)
+		 * 得到一个字符串(类名)，通过这个字符串得到一个类
+		 * 继而递归调用本方法 （processImports()） 来处理这个类
+		 * 注意： selector 返回的那个类，严格意义上讲并不符合 @Import(Xxx.class)，因为这个类没有直接被 import
+		 * 如果不符合，就不会调用这个方法 getImports(SourceClass) 就是得到所有的 import 类
+		 * 但是注意，递归当中是没有 getImports(SourceClass) ,意思就是直接把 Selector 当中返回的类直接当成一个 import 类去解析
+		 * 总结：
+		 * @Import(Xxx.Class) ,那么 Xxx 这个类会被解析
+		 * 如果 Xxx 是 selector 返回的，虽然没有加上 @Import，但也会被解析
+		 *
+		 * @Import 判断一组类是不是 3 中 imports（上边有解释）
 		 * **/
 		processImports(configClass, sourceClass, getImports(sourceClass), true);
 
@@ -572,7 +598,9 @@ class ConfigurationClassParser {
 
 	private void processImports(ConfigurationClass configClass, SourceClass currentSourceClass,
 			Collection<SourceClass> importCandidates, boolean checkForCircularImports) {
-
+		/**
+		 * 如果 @Import 中的值为空直接返回
+		 */
 		if (importCandidates.isEmpty()) {
 			return;
 		}
@@ -586,7 +614,9 @@ class ConfigurationClassParser {
 				for (SourceClass candidate : importCandidates) {
 					if (candidate.isAssignable(ImportSelector.class)) {
 						// Candidate class is an ImportSelector -> delegate to it to determine imports
+						/** 得到 @Import 中的类名*/
 						Class<?> candidateClass = candidate.loadClass();
+						/** 反射得 @Import 中类名，得到实例化对象*/
 						ImportSelector selector = BeanUtils.instantiateClass(candidateClass, ImportSelector.class);
 						ParserStrategyUtils.invokeAwareMethods(
 								selector, this.environment, this.resourceLoader, this.registry);
@@ -596,6 +626,10 @@ class ConfigurationClassParser {
 						else {
 							String[] importClassNames = selector.selectImports(currentSourceClass.getMetadata());
 							Collection<SourceClass> importSourceClasses = asSourceClasses(importClassNames);
+							/**
+							 * 递归调用 processImports
+							 * 递归进去后，如果传入的是一个普通类，会进外层else 637行
+							 */
 							processImports(configClass, currentSourceClass, importSourceClasses, false);
 						}
 					}
@@ -612,6 +646,13 @@ class ConfigurationClassParser {
 					else {
 						// Candidate class not an ImportSelector or ImportBeanDefinitionRegistrar ->
 						// process it as an @Configuration class
+						/**
+						 * 加入到  importStack 后调用 processConfigurationClass 进行处理
+						 * processConfigurationClass 主要是把类放到 configurationClasses
+						 * configurationClasses 是一个集合，在后边会拿出来解析成 BeanDefinition 继而注册
+						 * 可以看到普通类在扫描的时候就被注册
+						 * 如果是 ImportSelector ， 会先放到 configurationClasses 后面进行注册
+						 **/
 						this.importStack.registerImport(
 								currentSourceClass.getMetadata(), candidate.getMetadata().getClassName());
 						processConfigurationClass(candidate.asConfigClass(configClass));

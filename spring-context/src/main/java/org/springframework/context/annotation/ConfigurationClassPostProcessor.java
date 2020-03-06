@@ -235,6 +235,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	/**
 	 * Prepare the Configuration classes for servicing bean requests at runtime
 	 * by replacing them with CGLIB-enhanced subclasses.
+	 * ConfigurationClassPostProcessor 实现 BeanFactoryPostProcessor 的方法
 	 */
 	@Override
 	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) {
@@ -249,7 +250,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 			// Simply call processConfigurationClasses lazily at this point then.
 			processConfigBeanDefinitions((BeanDefinitionRegistry) beanFactory);
 		}
-
+		/** 产生 cglib 代理 */
 		enhanceConfigurationClasses(beanFactory);
 		beanFactory.addBeanPostProcessor(new ImportAwareBeanPostProcessor(beanFactory));
 	}
@@ -260,7 +261,9 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 	 */
 	public void processConfigBeanDefinitions(BeanDefinitionRegistry registry) {
 		/**
-		 * 定义一个 list 存放 app 中提供的 BeanDefinition (即加了 @Component 注解的类)
+		 * 定义一个 list 存放 app 中提供的 BeanDefinition
+		 *	此时还未扫描包中的类
+		 * 所以应该只有 register() 方法注册进 BeanDefinitionMap 中的类，即配置类
 		 */
 		List<BeanDefinitionHolder> configCandidates = new ArrayList<>();
 		/**
@@ -277,6 +280,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		for (String beanName : candidateNames) {
 			/** 循环拿出所有 BeanDefinition */
 			BeanDefinition beanDef = registry.getBeanDefinition(beanName);
+
 			if (ConfigurationClassUtils.isFullConfigurationClass(beanDef) ||
 					ConfigurationClassUtils.isLiteConfigurationClass(beanDef)) {
 				if (logger.isDebugEnabled()) {
@@ -297,6 +301,9 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 			 * 	这里就可以判断当前解析的类是否是个 全注解 的类
 			 * */
 			else if (ConfigurationClassUtils.checkConfigurationClassCandidate(beanDef, this.metadataReaderFactory)) {
+				/**
+				 * 这里 add 进去的只有配置类，即加了以上注解的类
+				 */
 				configCandidates.add(new BeanDefinitionHolder(beanDef, beanName));
 			}
 		}
@@ -316,7 +323,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		// Detect any custom bean name generation strategy supplied through the enclosing application context
 		SingletonBeanRegistry sbr = null;
 		/**
-		 * 判断 BeanDefinitionRegistry 是否是 SingletonBeanRegistry 子类
+		 *  判断 BeanDefinitionRegistry 是否是 SingletonBeanRegistry 子类
 		 *  当前传入的 registry 是 DefaultListableBeanFactory，是 BeanDefinitionRegistry 和 SingletonBeanRegistry 共同的子类
 		 *  但 BeanDefinitionRegistry 和 SingletonBeanRegistry 不存在继承实现关系
 		 *  所以需要强转为 BeanDefinitionRegistry
@@ -368,7 +375,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 						registry, this.sourceExtractor, this.resourceLoader, this.environment,
 						this.importBeanNameGenerator, parser.getImportRegistry());
 			}
-
+			/**	注册 ImportBeanDefinitionRegistrar 和 ImportSelector 以及 import 的普通类*/
 			this.reader.loadBeanDefinitions(configClasses);
 			alreadyParsed.addAll(configClasses);
 
