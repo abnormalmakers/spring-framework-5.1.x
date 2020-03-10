@@ -116,12 +116,33 @@ class ConstructorResolver {
 	 */
 	public BeanWrapper autowireConstructor(String beanName, RootBeanDefinition mbd,
 			@Nullable Constructor<?>[] chosenCtors, @Nullable Object[] explicitArgs) {
-
+		/** 实例化一个 BeanWrapperImpl 对象
+		 *  方法返回的是一个 BeanWrapper，是一个接口
+		 *  BeanWrapperImpl implements  BeanWrapper
+		 * */
 		BeanWrapperImpl bw = new BeanWrapperImpl();
 		this.beanFactory.initBeanWrapper(bw);
-
+		/**
+		 * Spring 决定采用哪个构造方法实例化 bean
+		 * 代码执行到这里 Spring 已经决定要采用一个特殊的构造方法实例化 bean
+		 * 但到底用哪个，可能类提供了很多构造方法
+		 * 采用哪个构造方法 Spring 有自己的一绕规则
+		 * 当他找到一个之后就会把这个构造方法赋值给 constructorToUse
+		 */
 		Constructor<?> constructorToUse = null;
+
+		/**
+		 * 构造方法的值，注意不是参数
+		 * 反射实例化 bean，在反射实例对象的时候，需要具体的值
+		 * 这个变量就是用来记录这个值的，后边有证明
+		 * 这里需要注意， argsHolderToUse 是一个数据结构，argsToUse 才是真正的值
+		 */
 		ArgumentsHolder argsHolderToUse = null;
+
+		/** 确定参数列表,argsToUse 可以有两种方法设置
+		 *  	1.通过 xml 设置
+		 *  	2.通过 BeanDefinition 设置
+		 */
 		Object[] argsToUse = null;
 
 		if (explicitArgs != null) {
@@ -130,6 +151,11 @@ class ConstructorResolver {
 		else {
 			Object[] argsToResolve = null;
 			synchronized (mbd.constructorArgumentLock) {
+				/**
+				 * 获取已解析的构造方法
+				 * 一般不会有，因为构造方法一般会提供一个
+				 * 除非有多个，那么才会存在已经解析完的构造放啊发
+				 */
 				constructorToUse = (Constructor<?>) mbd.resolvedConstructorOrFactoryMethod;
 				if (constructorToUse != null && mbd.constructorArgumentsResolved) {
 					// Found a cached constructor...
@@ -146,6 +172,7 @@ class ConstructorResolver {
 
 		if (constructorToUse == null || argsToUse == null) {
 			// Take specified constructors, if any.
+			/** 把构造方法赋值给 candidates 变量保存*/
 			Constructor<?>[] candidates = chosenCtors;
 			if (candidates == null) {
 				Class<?> beanClass = mbd.getBeanClass();
@@ -172,30 +199,75 @@ class ConstructorResolver {
 					return bw;
 				}
 			}
-
+			/**
+			 * 如果没有已经解析的构造方法，则需要去解析构造方法
+			 * chosenCtors != null 判断构造方法是否为空
+			 * mbd.getResolvedAutowireMode() == AutowireCapableBeanFactory.AUTOWIRE_CONSTRUCTOR 判断是否根据构造方法自动注入
+			 */
 			// Need to resolve the constructor.
 			boolean autowiring = (chosenCtors != null ||
 					mbd.getResolvedAutowireMode() == AutowireCapableBeanFactory.AUTOWIRE_CONSTRUCTOR);
 			ConstructorArgumentValues resolvedValues = null;
-
+			/**
+			 * 定义了最小参数个数
+			 * 如果你给构造方法的参数列表给定了具体的值
+			 * 那这些值的个数就是构造方法参数的个数
+			 */
 			int minNrOfArgs;
 			if (explicitArgs != null) {
 				minNrOfArgs = explicitArgs.length;
 			}
 			else {
+				/**
+				 * cargs 获取构造方法的值，注意是值不是类型和列表
+				 * resolvedValues = new ConstructorArgumentValues(); 实例化一个对象，用于存放构造方法的参数值
+				 */
 				ConstructorArgumentValues cargs = mbd.getConstructorArgumentValues();
 				resolvedValues = new ConstructorArgumentValues();
+				/**
+				 * 确定构造方法的参数数量，假设有如下配置
+				 * <bean id="person">
+				 * 		<constructor-arg index = "0" value = "str1"></constructor-arg>
+				 * 		<constructor-arg index = "1" value = "str2"></constructor-arg>
+				 * </bean>
+				 *  minNrOfArgs = 2
+				 * 为什么要确定？
+				 * 因为我们的构造方法有多个，
+				 * 那么类型和个数是 Spring 用来确定使用哪个构造方法的重要信息
+				 */
 				minNrOfArgs = resolveConstructorArguments(beanName, mbd, bw, cargs, resolvedValues);
 			}
 
+			/**
+			 * 对解析到的构造方法列表进行排序，为什么要排序？
+			 * 排序规则：访问权限优先，继而参数个数
+			 * 1.public Constructor(Object o1，Object o2，Object o3)
+			 * 2.public Constructor(Object o1，Object o2)
+			 * 3.public Constructor(Object o1)
+			 * 4.protected Constructor(Integer i,Object o1,Object o2，Object o3)
+			 * 5.protected Constructor(Integer i,Object o1,Object o2)
+			 * 6.protected Constructor(Integer i,Object o1)
+			 */
 			AutowireUtils.sortConstructors(candidates);
+			/**
+			 * 定义一个差异变量 minTypeDiffWeight ， 非常重要 ！！！！
+			 */
 			int minTypeDiffWeight = Integer.MAX_VALUE;
 			Set<Constructor<?>> ambiguousConstructors = null;
 			LinkedList<UnsatisfiedDependencyException> causes = null;
 
 			for (Constructor<?> candidate : candidates) {
 				Class<?>[] paramTypes = candidate.getParameterTypes();
-
+				/**
+				 *  constructorToUse 主要是用来封装已经解析过的并且正在使用的构造方法
+				 *  只有 constructorToUse == null 才有继续的意义，因为如果下面解析到一个符合的构造方法
+				 *  就会赋值给这个变量，所以这个变量不等于 null 就不需要再进行解析
+				 *  找到一个合适的构造方法，直接使用便可以
+				 *  argsToUse.length > paramTypes.length
+				 *  首先假设 argsToUse = [1,"joe",obj]
+				 *  那么回过头去匹配上边的构造方法 1 和 5，由于构造方法 1 具有更高的访问权限，所以选 1，尽管 5 看起来更加匹配
+				 *	再看 2，参数个数就不对所以直接忽略
+				 */
 				if (constructorToUse != null && argsToUse != null && argsToUse.length > paramTypes.length) {
 					// Already found greedy constructor that can be satisfied ->
 					// do not look any further, there are only less greedy constructors left.
