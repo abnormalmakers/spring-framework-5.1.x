@@ -377,6 +377,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 			}
 			/**	注册 ImportBeanDefinitionRegistrar 和 ImportSelector 以及 import 的普通类 到 BeanDefinitionMap
 			 *  注册 @Bean 注解标注的类到  BeanDefinitionMap
+			 *  注意，如果是 @Bean 注解了一个 static 方法，会有所不同,详情进入此方法
 			 * */
 			this.reader.loadBeanDefinitions(configClasses);
 			alreadyParsed.addAll(configClasses);

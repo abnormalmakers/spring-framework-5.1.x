@@ -221,11 +221,20 @@ class ConfigurationClassBeanDefinitionReader {
 
 		if (metadata.isStatic()) {
 			// static @Bean method
+			/**
+			 * 如果 @Bean 标注的是一个  static 方法
+			 * 会为这个 bean 加上一个 factory-method 方法，也就是说这个 bean 如果其他 @Bean 方法里也调用了的话，
+			 * 会重复创建
+			 * */
 			beanDef.setBeanClassName(configClass.getMetadata().getClassName());
 			beanDef.setFactoryMethodName(methodName);
 		}
 		else {
 			// instance @Bean method
+			/**
+			 * 没有被 static 修饰的 @Bean
+			 * 只会创建一次
+			 */
 			beanDef.setFactoryBeanName(configClass.getBeanName());
 			beanDef.setUniqueFactoryMethodName(methodName);
 		}

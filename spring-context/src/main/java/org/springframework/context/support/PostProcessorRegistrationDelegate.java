@@ -268,6 +268,13 @@ final class PostProcessorRegistrationDelegate {
 	public static void registerBeanPostProcessors(
 			ConfigurableListableBeanFactory beanFactory, AbstractApplicationContext applicationContext) {
 
+		/** 从 BeanDefinitionMap 中得到所有的 BeanPostProcessor
+		 * (这句话是重点,AOP 的后置处理器也是从 map 中获取,但并不是所有的 BeanPostProcessor 都需要注册进 map)
+		 * 包括开发者自定义的 BeanPostProcessor
+		 * 注册顺序 PriorityOrdered ---> Ordered ---> regular
+		 * interface PriorityOrdered extends Ordered
+		 * 没有实现以上两个接口的为 regular，最后注册
+		 * **/
 		String[] postProcessorNames = beanFactory.getBeanNamesForType(BeanPostProcessor.class, true, false);
 
 		// Register BeanPostProcessorChecker that logs an info message when
@@ -390,6 +397,9 @@ final class PostProcessorRegistrationDelegate {
 	 * BeanPostProcessor that logs an info message when a bean is created during
 	 * BeanPostProcessor instantiation, i.e. when a bean is not eligible for
 	 * getting processed by all BeanPostProcessors.
+	 * 当 Spring 配置中的后置处理器还没有被注册就已经开始了 bean 初始化,
+	 * 就是检查 bean 的后置处理器有没有被执行
+	 * 便会打印出 BeanPostProcessorChecker 中设定的信息
 	 */
 	private static final class BeanPostProcessorChecker implements BeanPostProcessor {
 
