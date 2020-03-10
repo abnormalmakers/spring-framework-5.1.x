@@ -533,7 +533,11 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
 			// Prepare the bean factory for use in this context.
-			/**准备工厂*/
+			/**准备工厂
+			 * 这里边 给 beanPostProcessor (一个 list) 注册了两个 beanPostProcessor
+			 * ApplicationContextAwareProcessor
+			 * ApplicationListenerDetector
+			 * */
 			prepareBeanFactory(beanFactory);
 
 			try {
@@ -547,19 +551,33 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				 * 详细流程看源码，太复杂了，
 				 * 主要就是通过调用 beanFactoryPostProcessor 完成包的扫描以及 BeanDefinition 的注册，
 				 * 并 put 进入 BeanDefinitionMap 中
+				 * 同时，这里还注册了一个 BeanPostProcessor ,
+				 * 是 ConfigurationClassPathPostProcessor 的内部类--> ImportAwareBeanPostProcessor
 				 * */
 				invokeBeanFactoryPostProcessors(beanFactory);
 
 				// Register bean processors that intercept bean creation.
+				/** 注册 BeanPostProcessor，包括开发者自定义的 beanPostProcessor 也在此处被注册
+				 *  Spring 5.1 之前的版本会注册进 7 个 BeanPostProcessor
+				 *  但在 5.1 版本之后，RequiredAnnotationBeanPostProcessor 这个后置处理器被弃用了
+				 *  这里方法里注册了 3 个 BeanPostProcessor,加上前面两个方法注册的 3 个后置处理器，总共 6 个
+				 *  其中这两个比较重要
+				 *  AutowiredAnnotationBeanPostProcessor
+				 *  CommonAnnotationBeanPostProcessor
+				 * */
 				registerBeanPostProcessors(beanFactory);
 
 				// Initialize message source for this context.
+				/**
+				 * 国际化
+				 */
 				initMessageSource();
 
 				// Initialize event multicaster for this context.
 				initApplicationEventMulticaster();
 
 				// Initialize other special beans in specific context subclasses.
+				/** 空壳方法 */
 				onRefresh();
 
 				// Check for listener beans and register them.
@@ -919,6 +937,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		beanFactory.freezeConfiguration();
 
 		// Instantiate all remaining (non-lazy-init) singletons.
+		/** 实例化所有单例对象 */
 		beanFactory.preInstantiateSingletons();
 	}
 
