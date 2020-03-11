@@ -161,6 +161,9 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	@Override
 	@Nullable
 	public Object getSingleton(String beanName) {
+		/**
+		 * 第二个值恒定为 true，表示允许循环依赖
+		 */
 		return getSingleton(beanName, true);
 	}
 
@@ -176,6 +179,14 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	protected Object getSingleton(String beanName, boolean allowEarlyReference) {
 		/**从 bean池 中获取的 bean 如果不为空直接返回*/
 		Object singletonObject = this.singletonObjects.get(beanName);
+		/**
+		 * isSingletonCurrentlyInCreation 方法中 this.singletonsCurrentlyInCreation.contains(beanName);
+		 * 判断 singletonsCurrentlyInCreation 集合中是否存在这个 beanName
+		 * 如果存在，则表示是一个正在被创建的 bean，如果不存在，则表示不是一个正在被创建的 bean
+		 * 那他是在什么时候把 beanName put 进 singletonsCurrentlyInCreation 集合中的呢？
+		 * beforeSingletonCreation(beanName);
+		 * 在 createBean 方法中，创建单例之前把这个beanName放入集合中缓存起来，表示这个 bean 正在被创建
+		 */
 		if (singletonObject == null && isSingletonCurrentlyInCreation(beanName)) {
 			synchronized (this.singletonObjects) {
 				singletonObject = this.earlySingletonObjects.get(beanName);
