@@ -139,6 +139,12 @@ import org.springframework.util.StringValueResolver;
  * @see #setResourceFactory
  * @see org.springframework.beans.factory.annotation.InitDestroyAnnotationBeanPostProcessor
  * @see org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor
+ *
+ * 主要负责处理 @Resource、 @PostConstruct、@PreDestroy 注解的实现
+ * @Resource 由他自己完成
+ * 其他两个由他的父类完成
+ * 父类 InitDestroyAnnotationBeanPostProcessor 的 postProcessMergedBeanDefinition 方法
+ * 会找出被 @PostConstruct、@PreDestroy 修饰的方法
  */
 @SuppressWarnings("serial")
 public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBeanPostProcessor
