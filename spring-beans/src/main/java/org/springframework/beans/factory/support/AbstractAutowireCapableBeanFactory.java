@@ -505,9 +505,12 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		try {
 			// Give BeanPostProcessors a chance to return a proxy instead of the target bean instance.
-			/** 在 bean 初始化前应用后置处理， 如果后置处理返回的 bean 不为 null，则直接返回
-			 *  一般不会用，如果实现 InstantiationAwareBeanPostProcessor 接口，Spring 会不负责其任何依赖管理，
-			 *  直接返回给 bean 开发者
+			/**
+			 *  第一次调用 Spring 的 bean 后置处理器
+			 * 在 bean 实例化前应用后置处理， 如果后置处理返回的 bean 不为 null（即开发者返回了一个代理对象），则直接返回
+			 *  如果实现 InstantiationAwareBeanPostProcessor 接口，Spring 会不负责其任何依赖管理，
+			 *  直接返回给 bean(自定义的Proxy) 开发者
+			 *
 			 * **/
 			Object bean = resolveBeforeInstantiation(beanName, mbdToUse);
 			if (bean != null) {
@@ -582,6 +585,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		synchronized (mbd.postProcessingLock) {
 			if (!mbd.postProcessed) {
 				try {
+					/** 第三次执行 bean 的后置处理器
+					 *  缓存注解信息
+					 */
 					applyMergedBeanDefinitionPostProcessors(mbd, beanType, beanName);
 				}
 				catch (Throwable ex) {
@@ -601,15 +607,21 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				logger.trace("Eagerly caching bean '" + beanName +
 						"' to allow for resolving potential circular references");
 			}
+			/** 第四次执行 bean 的后置处理器
+			 *  得到一个提前暴露的对象----对象不是bean（bean 是在spring容器当中，并且由spring自己产生的）
+			 * */
 			addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
 		}
 
 		// Initialize the bean instance.
 		Object exposedObject = bean;
 		try {
-			/** 给实例注入属性值 */
+			/** 给实例注入属性值，在这里第五、六次调用了 Bean 的后置处理器 */
 			populateBean(beanName, mbd, instanceWrapper);
-			/** 执行后置处理器 ， aop 就是在这里执行*/
+
+			/** 第七、第八次执行 Bean 的后置处理器 ，
+			 * aop @PostConstruct init-method 就是在这里执行
+			 * */
 			exposedObject = initializeBean(beanName, exposedObject, mbd);
 		}
 		catch (Throwable ex) {
@@ -1110,6 +1122,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		Object bean = null;
 		if (!Boolean.FALSE.equals(mbd.beforeInstantiationResolved)) {
 			// Make sure bean class is actually resolved at this point.
+			/** 判断是否有注册过 InstantiationAwareBeanPostProcessor 类型的 bean*/
 			if (!mbd.isSynthetic() && hasInstantiationAwareBeanPostProcessors()) {
 				Class<?> targetType = determineTargetType(beanName, mbd);
 				if (targetType != null) {
@@ -1218,6 +1231,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		// Candidate constructors for autowiring?
 		/**
+		 * 第二次执行后置处理器
 		 * 由后置处理器决定返回那些构造方法
 		 * 如果只有默认的无参构造，那么这里的返回值 ctors 为空，Spring认为没有提供构造方法
 		 * 如果提供了有参构造(不能显示声明无参构造)，Spring 认为有构造方法,
@@ -1412,6 +1426,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		// state of the bean before properties are set. This can be used, for example,
 		// to support styles of field injection.
 		/**
+		 * 第五次执行 bean 的后置处理器
 		 * 可以提供一个实现了 InstantiationAwareBeanPostProcessor 接口的 beanPostProcessor
 		 * 在 postProcessAfterInstantiation 返回 true 的 bean 就不会被 Spring 注入属性
 		 */
@@ -1454,11 +1469,15 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			for (BeanPostProcessor bp : getBeanPostProcessors()) {
 				if (bp instanceof InstantiationAwareBeanPostProcessor) {
 					InstantiationAwareBeanPostProcessor ibp = (InstantiationAwareBeanPostProcessor) bp;
+					/**
+					 * @Value  @Autowired注解 装配属性
+					 **/
 					PropertyValues pvsToUse = ibp.postProcessProperties(pvs, bw.getWrappedInstance(), beanName);
 					if (pvsToUse == null) {
 						if (filteredPds == null) {
 							filteredPds = filterPropertyDescriptorsForDependencyCheck(bw, mbd.allowCaching);
 						}
+						/** 第六次执行 Bean 的后置处理器 */
 						pvsToUse = ibp.postProcessPropertyValues(pvs, filteredPds, bw.getWrappedInstance(), beanName);
 						if (pvsToUse == null) {
 							return;
@@ -1813,10 +1832,14 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		Object wrappedBean = bean;
 		if (mbd == null || !mbd.isSynthetic()) {
+			/**第七次执行 bean 的后置处理器
+			 * @PostConstruct 就是在这里执行
+			 * */
 			wrappedBean = applyBeanPostProcessorsBeforeInitialization(wrappedBean, beanName);
 		}
 
 		try {
+			/** 执行 bean 的生命周期初始化回调方法 init-method，不是 @PostConstruct*/
 			invokeInitMethods(beanName, wrappedBean, mbd);
 		}
 		catch (Throwable ex) {
@@ -1825,6 +1848,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 					beanName, "Invocation of init method failed", ex);
 		}
 		if (mbd == null || !mbd.isSynthetic()) {
+			/**
+			 * 第八次执行 bean 的后置处理器
+			 */
 			wrappedBean = applyBeanPostProcessorsAfterInitialization(wrappedBean, beanName);
 		}
 
