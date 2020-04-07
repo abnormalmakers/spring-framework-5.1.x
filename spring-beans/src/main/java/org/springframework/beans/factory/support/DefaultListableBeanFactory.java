@@ -1176,6 +1176,7 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			Object result = getAutowireCandidateResolver().getLazyResolutionProxyIfNecessary(
 					descriptor, requestingBeanName);
 			if (result == null) {
+				/** 找到可注入的属性**/
 				result = doResolveDependency(descriptor, requestingBeanName, autowiredBeanNames, typeConverter);
 			}
 			return result;
@@ -1220,7 +1221,10 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			if (multipleBeans != null) {
 				return multipleBeans;
 			}
-
+			/**
+			 * 按照类型找到可注入属性的所有对象
+			 * 然后把对象都缓存到一个 Map 中
+			 */
 			Map<String, Object> matchingBeans = findAutowireCandidates(beanName, type, descriptor);
 			if (matchingBeans.isEmpty()) {
 				if (isRequired(descriptor)) {
@@ -1231,7 +1235,12 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 
 			String autowiredBeanName;
 			Object instanceCandidate;
-
+			/**
+			 * 如果 map.size() > 1，说明按类型自动装配找到了1个以上的可注入对象
+			 * 接下来就需要从 map 中挑选一个合适的对象注入
+			 * @Primary
+			 * 按 属性名 自动装配
+			 */
 			if (matchingBeans.size() > 1) {
 				autowiredBeanName = determineAutowireCandidate(matchingBeans, descriptor);
 				if (autowiredBeanName == null) {
@@ -1504,14 +1513,25 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 	protected String determineAutowireCandidate(Map<String, Object> candidates, DependencyDescriptor descriptor) {
 		Class<?> requiredType = descriptor.getDependencyType();
 		String primaryCandidate = determinePrimaryCandidate(candidates, requiredType);
+		/**
+		 * 判断 Map 中的对象所属的类是否有加上了 @Primary 注解
+		 */
 		if (primaryCandidate != null) {
 			return primaryCandidate;
 		}
+		/**
+		 * 判断是否有 priority
+		 */
 		String priorityCandidate = determineHighestPriorityCandidate(candidates, requiredType);
 		if (priorityCandidate != null) {
 			return priorityCandidate;
 		}
 		// Fallback
+		/**
+		 * matchesBeanName(candidateName, descriptor.getDependencyName())
+		 * 匹配 属性名 与 beanName
+		 * 根据属性名查找beanName，找到可注入的bean
+		 */
 		for (Map.Entry<String, Object> entry : candidates.entrySet()) {
 			String candidateName = entry.getKey();
 			Object beanInstance = entry.getValue();
