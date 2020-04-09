@@ -564,6 +564,8 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				 *  其中这两个比较重要
 				 *  AutowiredAnnotationBeanPostProcessor
 				 *  CommonAnnotationBeanPostProcessor
+				 *  如果实现了 aop，则在这里会注册一个AutoProxyCreator 后置处理器
+				 *  这些后置处理器都会在这被提前创建成 bean 实例,以便于参与后边 bean 的创建过程
 				 * */
 				registerBeanPostProcessors(beanFactory);
 
