@@ -130,6 +130,11 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	 * @param beanName the name of the bean
 	 * @param singletonObject the singleton object
 	 */
+	/**
+	 * 把创建好的 bean 放进一级缓存池 singletonObjects
+	 * 从二级三级缓存池中移除 bean
+	 * 将 beanName add 进 registeredSingletons （LinkedHashSet）
+	 */
 	protected void addSingleton(String beanName, Object singletonObject) {
 		synchronized (this.singletonObjects) {
 			this.singletonObjects.put(beanName, singletonObject);
@@ -260,6 +265,9 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 					}
 					afterSingletonCreation(beanName);
 				}
+				/**
+				 * 将创建好的 bean 放入 singletonObjects 缓存池中
+				 */
 				if (newSingleton) {
 					addSingleton(beanName, singletonObject);
 				}
@@ -363,6 +371,7 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 	 * @see #isSingletonCurrentlyInCreation
 	 */
 	protected void afterSingletonCreation(String beanName) {
+		/** 创建完成后把 beanName 从 singletonsCurrentlyInCreation 集合中移除**/
 		if (!this.inCreationCheckExclusions.contains(beanName) && !this.singletonsCurrentlyInCreation.remove(beanName)) {
 			throw new IllegalStateException("Singleton '" + beanName + "' isn't currently in creation");
 		}
