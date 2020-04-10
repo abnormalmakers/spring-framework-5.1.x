@@ -310,6 +310,11 @@ final class PostProcessorRegistrationDelegate {
 		registerBeanPostProcessors(beanFactory, priorityOrderedPostProcessors);
 
 		// Next, register the BeanPostProcessors that implement Ordered.
+		/**
+		 *  AutoProxyCreator 一个 beanPostProcessor
+		 *  AOP 的 后置处理器，
+		 *  在之后 InitializeBean 方法中调用该后置处理器为实现了 AOP 的对象创建代理
+		 */
 		List<BeanPostProcessor> orderedPostProcessors = new ArrayList<>();
 		for (String ppName : orderedPostProcessorNames) {
 			BeanPostProcessor pp = beanFactory.getBean(ppName, BeanPostProcessor.class);
