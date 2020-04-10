@@ -102,6 +102,13 @@ public class ProxyCreatorSupport extends AdvisedSupport {
 		if (!this.active) {
 			activate();
 		}
+		/**
+		 *  getAopProxyFactory() 返回一个 Aop 代理工厂
+		 *  createAopProxy() 返回一个
+		 *  	new ObjenesisCglibAopProxy(config);
+		 *  	或者
+		 *  	new JdkDynamicAopProxy(config);
+		 */
 		return getAopProxyFactory().createAopProxy(this);
 	}
 
