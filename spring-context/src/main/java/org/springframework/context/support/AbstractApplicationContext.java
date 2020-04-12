@@ -528,7 +528,8 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 			 *  obtainFreshBeanFactory方法里边调用 getFactory()
 			 *  由于 getFactory() 是一个抽象方法，所以是调用它的子类 GenericApplicationContext 的方法
 			 *  返回 this.beanFactory
-			 *  所以 getFactory() 返回的是 DefaultListableBeanFactory
+			 *  所以 getFactory() 返回的是 DefaultListableBeanFactory，
+			 *  此 beanFactory 是在调用 GenericApplicationContext 构造函数时实例化的
 			 * */
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
@@ -553,6 +554,8 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				 * 并 put 进入 BeanDefinitionMap 中
 				 * 同时，这里还注册了一个 BeanPostProcessor ,
 				 * 是 ConfigurationClassPathPostProcessor 的内部类--> ImportAwareBeanPostProcessor
+				 * 主要完成的工作：
+				 * 		在这里完成了 Spring 包扫描，将所有需要交给 Spring 管理的对象封装成 BeanDefinition，put 进 beanDefinitionMap
 				 * */
 				invokeBeanFactoryPostProcessors(beanFactory);
 
@@ -586,9 +589,11 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				registerListeners();
 
 				// Instantiate all remaining (non-lazy-init) singletons.
+				/** 创建所有交由 Spring 管理的单例 bean **/
 				finishBeanFactoryInitialization(beanFactory);
 
 				// Last step: publish corresponding event.
+				/** 完成BeanFactory的初始化创建工作；IOC容器就创建完成 **/
 				finishRefresh();
 			}
 
