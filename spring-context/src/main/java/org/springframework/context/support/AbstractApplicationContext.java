@@ -550,8 +550,11 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				/**
 				 * 在Spring 环境中执行已经被注册的 BeanFactoryPostProcessors
 				 * 详细流程看源码，太复杂了，
-				 * 主要就是通过调用 beanFactoryPostProcessor 完成包的扫描以及 BeanDefinition 的注册，
-				 * 并 put 进入 BeanDefinitionMap 中
+				 * 主要就是先 getBean(ConfigurationClassPathPostProcessor) 实例化 ConfigurationClassPathPostProcessor ，
+				 * ConfigurationClassPathPostProcessor 是在 new AnnotationConfigApplicationContext 对象中，
+				 * 被封装为 RootBeanDefinition 对象 put 进了 beanDefinitionMap 中
+				 * 然后通过调用 beanFactoryPostProcessor 的实现类 ConfigurationClassPathPostProcessor 的
+				 * PostProcessorBeanDefinitionRegistry 方法完成包的扫描以及 BeanDefinition 的注册，并 put 进入 BeanDefinitionMap 中
 				 * 同时，这里还注册了一个 BeanPostProcessor ,
 				 * 是 ConfigurationClassPathPostProcessor 的内部类--> ImportAwareBeanPostProcessor
 				 * 主要完成的工作：
