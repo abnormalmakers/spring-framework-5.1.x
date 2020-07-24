@@ -509,8 +509,17 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			 *  第一次调用 Spring 的 bean 后置处理器
 			 * 在 bean 实例化前应用后置处理， 如果后置处理返回的 bean 不为 null（即开发者返回了一个代理对象），则直接返回
 			 *  如果实现 InstantiationAwareBeanPostProcessor 接口，Spring 会不负责其任何依赖管理，
-			 *  直接返回给 bean(自定义的Proxy) 开发者
-			 *
+			 *  直接返回给 bean(自定义的Proxy) 开发者。
+			 *  resolveBeforeInstantiation 方法里会调用 InstantiationAwareBeanPostProcessor 的 postProcessBeforeInstantiation() 方法
+			 *  这个方法用于判断当前类是否需要增强处理，如果肯定不需要，则放入 adviseBeans 这个 Map 中存起来，
+			 *  如果不确定，就暂时不管，不存放。
+			 * 之后在完成 SpringAOP 代理的时候就会忽略这个 Map 里存放的类。
+			 * 判断肯定不需要增强的依据：
+			 * isInfrastructureClass(beanClass) 方法
+			 * 	boolean retVal = Advice.class.isAssignableFrom(beanClass) ||
+			 * 				Pointcut.class.isAssignableFrom(beanClass) ||
+			 * 				Advisor.class.isAssignableFrom(beanClass) ||
+			 * 				AopInfrastructureBean.class.isAssignableFrom(beanClass);
 			 * **/
 			Object bean = resolveBeforeInstantiation(beanName, mbdToUse);
 			if (bean != null) {
@@ -1470,7 +1479,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				if (bp instanceof InstantiationAwareBeanPostProcessor) {
 					InstantiationAwareBeanPostProcessor ibp = (InstantiationAwareBeanPostProcessor) bp;
 					/**
-					 * @Value  @Autowired注解 装配属性
+					 * 装配属性 @Value  @Autowired注解
 					 **/
 					PropertyValues pvsToUse = ibp.postProcessProperties(pvs, bw.getWrappedInstance(), beanName);
 					if (pvsToUse == null) {
@@ -1833,6 +1842,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		Object wrappedBean = bean;
 		if (mbd == null || !mbd.isSynthetic()) {
 			/**第七次执行 bean 的后置处理器
+			 * 这里执行的是实现了 BeanPostProcessor 接口的 postProcessBeforeInitialization 方法
 			 * @PostConstruct 就是在这里执行
 			 * */
 			wrappedBean = applyBeanPostProcessorsBeforeInitialization(wrappedBean, beanName);
@@ -1850,6 +1860,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		if (mbd == null || !mbd.isSynthetic()) {
 			/**
 			 * 第八次执行 bean 的后置处理器
+			 * 这里执行的是实现了 BeanPostProcessor 接口的 postProcessAfterInitialization 方法
 			 * 实现 AOP 代理
 			 */
 			wrappedBean = applyBeanPostProcessorsAfterInitialization(wrappedBean, beanName);
