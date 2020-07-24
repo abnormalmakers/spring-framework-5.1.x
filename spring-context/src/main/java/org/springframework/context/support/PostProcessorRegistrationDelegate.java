@@ -143,6 +143,13 @@ final class PostProcessorRegistrationDelegate {
 			 */
 			for (String ppName : postProcessorNames) {
 				if (beanFactory.isTypeMatch(ppName, PriorityOrdered.class)) {
+					/**
+					 * 这里 getBean() 实例化了一些 Spring 初始化需要的对象
+					 * ConfigurationClassPostProcessor 类的就是在这里实例化的，
+					 * 因为下边调用 invokeBeanDefinitionRegistryPostProcessors 方法，需要调用
+					 * ConfigurationClassPostProcessor 的 postProcessBeanDefinitionRegistry 方法
+					 * 所以在这里必须天谴实例化 ConfigurationClassPostProcessor
+					 */
 					currentRegistryProcessors.add(beanFactory.getBean(ppName, BeanDefinitionRegistryPostProcessor.class));
 					processedBeans.add(ppName);
 				}
