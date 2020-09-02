@@ -76,7 +76,7 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 		 * 创建一个读取 bean定义 的读取器
 		 * 在此处注册一些 Spring 初始化需要的类，其中最重要的一个类就是
 		 * ConfigurationClassPostProcessor ,他的 PostProcessorBeanDefinitionRegistry 方法负责 bean 的扫描
-		 * 这里会把 ConfigurationClassPostProcessor 封装为 BeanDefinition 并添加进 beanDefinitionMap 中
+		 * 这里会把 ConfigurationClassPostProcessor 封装为 RootBeanDefinition 并添加进 beanDefinitionMap 中
 		 * 但并未实例化
 		 * ConfigurationClassPostProcessor 实例化是在 invokeBeanFactoryPostProcessor 方法中
 		 */
