@@ -79,6 +79,10 @@ public class AnnotationConfigApplicationContext extends GenericApplicationContex
 		 * 这里会把 ConfigurationClassPostProcessor 封装为 RootBeanDefinition 并添加进 beanDefinitionMap 中
 		 * 但并未实例化
 		 * ConfigurationClassPostProcessor 实例化是在 invokeBeanFactoryPostProcessor 方法中
+		 *
+		 * 同时还有两个关键的后置处理器，也会封装成 RootBeanDefinition，存入 beanDefinitionMap 中
+		 * 		AutowiredAnnotationBeanPostProcessor 处理 @Autowired 自动装配
+		 * 		CommonAnnotationBeanPostProcessor 通用注解，比如 @Resource 注解
 		 */
 		this.reader = new AnnotatedBeanDefinitionReader(this);
 		/**
