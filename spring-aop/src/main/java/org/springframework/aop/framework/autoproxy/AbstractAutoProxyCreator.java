@@ -248,6 +248,12 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 			if (this.advisedBeans.containsKey(cacheKey)) {
 				return null;
 			}
+			/**
+			 * 判断当前这个类需不需要增强，如果确定不需要增强
+			 * 则放入 advisedBeans map 中，如果暂时不确定，那么就不回存放
+			 * private final Map<Object, Boolean> advisedBeans = new ConcurrentHashMap<>(256);
+			 * 也就是说在之后做 AOP 增强
+			 */
 			if (isInfrastructureClass(beanClass) || shouldSkip(beanClass, beanName)) {
 				this.advisedBeans.put(cacheKey, Boolean.FALSE);
 				return null;
@@ -380,6 +386,9 @@ public abstract class AbstractAutoProxyCreator extends ProxyProcessorSupport
 	 * @see #shouldSkip
 	 */
 	protected boolean isInfrastructureClass(Class<?> beanClass) {
+		/**
+		 * 判断当前类肯定不需要增强的依据
+		 */
 		boolean retVal = Advice.class.isAssignableFrom(beanClass) ||
 				Pointcut.class.isAssignableFrom(beanClass) ||
 				Advisor.class.isAssignableFrom(beanClass) ||
