@@ -123,7 +123,7 @@ final class PostProcessorRegistrationDelegate {
 			 * 首先,调用实现了 PriorityOrdered 接口的 BeanDefinitionRegistryPostProcessors
 			 * ConfigurationClassPostProcessor 实现了 PriorityOrdered 接口，所以在这里会被调用
 			 */
-			/** 根据类型获取 bean 的名字
+			/** 根据类型获取 bean 的名字，这个类型是 BeanDefinitionRegistryPostProcessor.class
 			 * 	BeanDefinitionRegistryPostProcessor.class，此时 Spring 内部只有 ConfigurationClassPostProcessor
 			 * 	ConfigurationClassPostProcessor implements  BeanDefinitionRegistryPostProcessor extends BeanFactoryPostProcessor
 			 * **/
