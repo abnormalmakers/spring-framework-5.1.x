@@ -524,6 +524,13 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			 * 	BeanPostProcessor 接口的 postProcessAfterInitialization() 方法
 			 * **/
 			Object bean = resolveBeforeInstantiation(beanName, mbdToUse);
+			/**
+			 * 如果返回的 bean 不为空，则直接返回
+			 * 也就是说，Spring 不会再为这个 bean 进行依赖注入，初始化等工作，但会放进 SingletonObjects 中
+			 * 所以如果不想把 bean 交由 Spring 管理，就实现 InstantiationAwareBeanPostProcessor 这个接口
+			 * 不过这个 bean 的属性必须由开发者自己注入
+			 * 一般不推荐使用，包括 InstantiationAwareBeanPostProcessor 也不推荐开发者使用，这是 Spring 内部调用的接口
+			 */
 			if (bean != null) {
 				return bean;
 			}
