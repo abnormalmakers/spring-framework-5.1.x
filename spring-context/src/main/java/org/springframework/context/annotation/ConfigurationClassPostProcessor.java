@@ -350,6 +350,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 				this.resourceLoader, this.componentScanBeanNameGenerator, registry);
 
 		/**
+		 * configCandidates  是一个 ArrayList，装的是 配置类的 BeanDefinition
 		 * 实例化两个 Set , 对 configCandidates 进行去重
 		 * 因为如果开发者自定义了 MyBeanFactoryPostProcessor 并实现了 BeanDefinitionRegistry ,可能有配置类重复的情况
 		 * 比如一个 AppConfig 被 register 了两次
@@ -362,6 +363,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 			/** 完成包扫描
 			 *  解析扫描的一些基本信息，比如是否过滤，比如是否加入新的包
 			 *  完成 BeanDefinition的注册 ---> registerBeanDefinition(definitionHolder, this.registry);
+			 *  candidates 里边就是装了去重过后的配置类的 BeanDefinition
 			 * **/
 			parser.parse(candidates);
 			parser.validate();
