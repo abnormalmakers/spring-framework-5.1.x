@@ -348,6 +348,13 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistrySupport imp
 
 				// Create bean instance.
 				if (mbd.isSingleton()) {
+					/**
+					 * 在这个 getSingleton 方法里边先从单例 bean 池中取，
+					 * 若取不到则执行 singletonFactory.getObject() 即 createBean(beanName, mbd, args); 进行创建
+					 * 创建完成后将 bean 存入缓存池 singletonObjects 中
+					 * 总结：
+					 * 		这里完成了 bean 的创建以及存入进缓存池 singletonObjects
+					 */
 					sharedInstance = getSingleton(beanName, () -> {
 						try {
 							return createBean(beanName, mbd, args);
