@@ -51,6 +51,7 @@ public class DefaultAopProxyFactory implements AopProxyFactory, Serializable {
 		/**
 		 * 根据条件判断选择 Jdk 还是 cglib 动态代理
 		 * @EnableAspectJAutoProxy(proxyTargetClass = true)  则表明使用 cglib 代理
+		 * config.isOptimize() 默认 false，可通过 xml 文件配置
 		 */
 		if (config.isOptimize() || config.isProxyTargetClass() || hasNoUserSuppliedProxyInterfaces(config)) {
 			Class<?> targetClass = config.getTargetClass();
@@ -60,6 +61,8 @@ public class DefaultAopProxyFactory implements AopProxyFactory, Serializable {
 			}
 			/**
 			 * targetClass.isInterface() 判断被代理类是否实现了接口
+			 * 也就是说目标类如果是一个接口，那么即使 @EnableAspectJAutoProxy(proxyTargetClass = true)
+			 * 也会使用 Jdk 动态代理
 			 */
 			if (targetClass.isInterface() || Proxy.isProxyClass(targetClass)) {
 				return new JdkDynamicAopProxy(config);
