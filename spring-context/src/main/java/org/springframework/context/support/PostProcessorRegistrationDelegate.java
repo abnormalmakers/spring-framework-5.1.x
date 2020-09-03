@@ -148,7 +148,7 @@ final class PostProcessorRegistrationDelegate {
 					 * ConfigurationClassPostProcessor 类的就是在这里实例化的，
 					 * 因为下边调用 invokeBeanDefinitionRegistryPostProcessors 方法，需要调用
 					 * ConfigurationClassPostProcessor 的 postProcessBeanDefinitionRegistry 方法
-					 * 所以在这里必须天谴实例化 ConfigurationClassPostProcessor
+					 * 所以在这里必须先实例化 ConfigurationClassPostProcessor
 					 */
 					currentRegistryProcessors.add(beanFactory.getBean(ppName, BeanDefinitionRegistryPostProcessor.class));
 					processedBeans.add(ppName);
@@ -163,6 +163,7 @@ final class PostProcessorRegistrationDelegate {
 			 * 此时，currentRegistryProcessors 列表中就只有 ConfigurationClassPostProcessor 一个类
 			 * 此方法循环所有 BeanDefinitionRegistryPostProcessor 类型，
 			 * 调用 他的扩展方法 postProcessBeanDefinitionRegistry()
+			 * 就在这里进行包扫描，并将所有交由 Spring 创建的类封装为 BeanDefinition 注册进 beanDefinitionMap 中
 			 */
 			invokeBeanDefinitionRegistryPostProcessors(currentRegistryProcessors, registry);
 			currentRegistryProcessors.clear();
