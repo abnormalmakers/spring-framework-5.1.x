@@ -332,6 +332,7 @@ public abstract class AopUtils {
 	 * @return the invocation result, if any
 	 * @throws Throwable if thrown by the target method
 	 * @throws org.springframework.aop.AopInvocationException in case of a reflection error
+	 * 反射调用连接点方法
 	 */
 	@Nullable
 	public static Object invokeJoinpointUsingReflection(@Nullable Object target, Method method, Object[] args)
@@ -340,6 +341,7 @@ public abstract class AopUtils {
 		// Use reflection to invoke the method.
 		try {
 			ReflectionUtils.makeAccessible(method);
+			/** 调用连接点真实方法 **/
 			return method.invoke(target, args);
 		}
 		catch (InvocationTargetException ex) {
