@@ -117,7 +117,7 @@ abstract class ConfigurationClassUtils {
 		 * 如果存在 Spring 则把此类看作一个全注解类
 		 */
 		if (isFullConfigurationCandidate(metadata)) {
-			/** 如果存在 Configuration 注解， 则为 BeanDefinition 设置 CONFIGURATION_CLASS_ATTRIBUTE 属性为 full **/
+			/** 如果存在 Configuration 注解， 则为 BeanDefinition 设置 CONFIGURATION_CLASS_ATTRIBUTE 属性为 CONFIGURATION_CLASS_FULL **/
 			beanDef.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_FULL);
 		}
 		/**
@@ -130,7 +130,7 @@ abstract class ConfigurationClassUtils {
 		 * 	如果不存在 @Configuration, Spring 则把此类看作一个部分注解类
 		 */
 		else if (isLiteConfigurationCandidate(metadata)) {
-			/** 如果不存在 Configuration 注解但存在以上注解， 则为 BeanDefinition 设置 CONFIGURATION_CLASS_ATTRIBUTE 属性为 lite **/
+			/** 如果不存在 Configuration 注解但存在以上注解， 则为 BeanDefinition 设置 CONFIGURATION_CLASS_ATTRIBUTE 属性为 CONFIGURATION_CLASS_LITE **/
 			beanDef.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_LITE);
 		}
 		else {
