@@ -72,7 +72,9 @@ public abstract class AopConfigUtils {
 	@Nullable
 	public static BeanDefinition registerAutoProxyCreatorIfNecessary(
 			BeanDefinitionRegistry registry, @Nullable Object source) {
-
+		/**
+		 *  向 Spring 容器中注册 InfrastructureAdvisorAutoProxyCreator
+		 */
 		return registerOrEscalateApcAsRequired(InfrastructureAdvisorAutoProxyCreator.class, registry, source);
 	}
 
@@ -134,7 +136,12 @@ public abstract class AopConfigUtils {
 			}
 			return null;
 		}
-
+		/**
+		 * 封装 beanDefinition
+		 * cls = InfrastructureAdvisorAutoProxyCreator.Class
+		 * 最后注册进 beanDefinitionMap，即交由 Spring 管理
+		 * this.beanDefinitionMap.put(beanName, beanDefinition);
+		 */
 		RootBeanDefinition beanDefinition = new RootBeanDefinition(cls);
 		beanDefinition.setSource(source);
 		beanDefinition.getPropertyValues().add("order", Ordered.HIGHEST_PRECEDENCE);
