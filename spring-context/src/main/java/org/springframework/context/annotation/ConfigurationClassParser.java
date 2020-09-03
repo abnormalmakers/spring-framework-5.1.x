@@ -612,6 +612,12 @@ class ConfigurationClassParser {
 			this.importStack.push(configClass);
 			try {
 				for (SourceClass candidate : importCandidates) {
+					/**
+					 * 在这儿看 @Import 导入的类
+					 * 			candidate 是否实现了 ImportSelector
+					 * 			candidate 是否实现了 ImportBeanDefinitionRegistrar
+					 * 			candidate 是否只是一个普通类
+					 */
 					if (candidate.isAssignable(ImportSelector.class)) {
 						// Candidate class is an ImportSelector -> delegate to it to determine imports
 						/** 得到 @Import 中的类名*/
