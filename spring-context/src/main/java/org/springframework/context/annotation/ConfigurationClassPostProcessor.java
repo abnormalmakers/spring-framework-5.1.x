@@ -288,7 +288,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 				}
 			}
 			/** ConfigurationClassUtils.checkConfigurationClassCandidate(beanDef, this.metadataReaderFactory)
-			 *  判断 BeanDefinition 是否加了什么注解
+			 *  判断 BeanDefinition 是否加了注解，然后判断加了什么注解
 			 *  如果加了 Configuration 注解 ，下边 4 个注解不会在判断
 			 *  如果没加 Configuration 注解，才会判断
 			 *  candidateIndicators.add(Component.class.getName());
@@ -366,6 +366,16 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 			parser.parse(candidates);
 			parser.validate();
 
+			/**
+			 * parser.getConfigurationClasses() 方法
+			 * 在 parser.parse(candidates); 中，处理 @Import 注解 导入的类
+			 * 在 parse 方法中，@ComponentScan 注解扫描的类都已经封装成为 BeanDefinition，存放进了 beanDefinitionMap 中
+			 * 而 @Import 导入的类都 put 进了 configurationClasses，此时并未封装成 BeanDefinition，也未存入 beanDefinitionMap
+			 */
+
+			/**
+			 * private final Map<ConfigurationClass, ConfigurationClass> configurationClasses = new LinkedHashMap<>();
+			 */
 			Set<ConfigurationClass> configClasses = new LinkedHashSet<>(parser.getConfigurationClasses());
 			configClasses.removeAll(alreadyParsed);
 
