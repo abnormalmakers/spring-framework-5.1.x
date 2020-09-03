@@ -520,6 +520,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			 * 				Pointcut.class.isAssignableFrom(beanClass) ||
 			 * 				Advisor.class.isAssignableFrom(beanClass) ||
 			 * 				AopInfrastructureBean.class.isAssignableFrom(beanClass);
+			 * 	如果 postProcessBeforeInstantiation() 方法返回的 bean 不为 null，则会调用
+			 * 	BeanPostProcessor 接口的 postProcessAfterInitialization() 方法
 			 * **/
 			Object bean = resolveBeforeInstantiation(beanName, mbdToUse);
 			if (bean != null) {
