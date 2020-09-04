@@ -627,6 +627,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			}
 			/** 第四次执行 bean 的后置处理器
 			 *  得到一个提前暴露的对象----对象不是bean（bean 是在spring容器当中，并且由spring自己产生的）
+			 *  getEarlyBeanReference(beanName, mbd, bean) 方法非常关键
+			 *  当循环依赖的情况出现时，通过此方法完成循环依赖情况下的 aop 动态代理
 			 * */
 			addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
 		}
@@ -991,6 +993,11 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 	protected Object getEarlyBeanReference(String beanName, RootBeanDefinition mbd, Object bean) {
 		Object exposedObject = bean;
 		if (!mbd.isSynthetic() && hasInstantiationAwareBeanPostProcessors()) {
+			/**
+			 * 获取所有的 bean 的后置处理器
+			 * AbstractAutoProxyCreator 重写了该方法 getEarlyBeanReference()
+			 * 也就是说，如果循环依赖的话，aop 是在这里完成的
+			 */
 			for (BeanPostProcessor bp : getBeanPostProcessors()) {
 				if (bp instanceof SmartInstantiationAwareBeanPostProcessor) {
 					SmartInstantiationAwareBeanPostProcessor ibp = (SmartInstantiationAwareBeanPostProcessor) bp;
