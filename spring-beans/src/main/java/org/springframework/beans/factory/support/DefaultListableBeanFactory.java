@@ -1269,7 +1269,9 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 				autowiredBeanNames.add(autowiredBeanName);
 			}
 			if (instanceCandidate instanceof Class) {
-				/** 在这里完成了循环依赖注入 */
+				/** 这里从 Spring 容器中获取可以注入的 bean 对象
+				 *  也是循环依赖注入的关键出口
+				 * */
 				instanceCandidate = descriptor.resolveCandidate(autowiredBeanName, type, this);
 			}
 			Object result = instanceCandidate;
