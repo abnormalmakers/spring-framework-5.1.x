@@ -401,6 +401,10 @@ public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
 	@Override
 	@Nullable
 	public final HandlerExecutionChain getHandler(HttpServletRequest request) throws Exception {
+		/**
+		 * 首先找到对应的 handler 处理方法
+		 * 返回一个 handler 方法，类型是 HandlerMethod
+		 */
 		Object handler = getHandlerInternal(request);
 		if (handler == null) {
 			handler = getDefaultHandler();
@@ -413,7 +417,10 @@ public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
 			String handlerName = (String) handler;
 			handler = obtainApplicationContext().getBean(handlerName);
 		}
-
+		/**
+		 * 传入 handler，把 handler 包装成一个 HandlerExecutionChain 对象
+		 * 其中包含了 拦截器链
+		 */
 		HandlerExecutionChain executionChain = getHandlerExecutionChain(handler, request);
 
 		if (logger.isTraceEnabled()) {
@@ -473,10 +480,18 @@ public abstract class AbstractHandlerMapping extends WebApplicationObjectSupport
 	 * @see #getAdaptedInterceptors()
 	 */
 	protected HandlerExecutionChain getHandlerExecutionChain(Object handler, HttpServletRequest request) {
+		/**
+		 * 获得一个 HandlerExecutionChain 对象，即处理器执行链
+		 */
 		HandlerExecutionChain chain = (handler instanceof HandlerExecutionChain ?
 				(HandlerExecutionChain) handler : new HandlerExecutionChain(handler));
 
 		String lookupPath = this.urlPathHelper.getLookupPathForRequest(request);
+		/**
+		 * 循环所有拦截器，将拦截器添加到处理器执行链即 HandlerExecutionChain 对象中
+		 * private List<HandlerInterceptor> interceptorList;
+		 * 这是 HandlerExecutionChain 的一个属性
+		 */
 		for (HandlerInterceptor interceptor : this.adaptedInterceptors) {
 			if (interceptor instanceof MappedInterceptor) {
 				MappedInterceptor mappedInterceptor = (MappedInterceptor) interceptor;
