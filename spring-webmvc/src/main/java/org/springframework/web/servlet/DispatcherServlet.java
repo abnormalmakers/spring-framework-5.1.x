@@ -492,6 +492,7 @@ public class DispatcherServlet extends FrameworkServlet {
 	 */
 	@Override
 	protected void onRefresh(ApplicationContext context) {
+		/** 初始化策略 */
 		initStrategies(context);
 	}
 
@@ -500,14 +501,33 @@ public class DispatcherServlet extends FrameworkServlet {
 	 * <p>May be overridden in subclasses in order to initialize further strategy objects.
 	 */
 	protected void initStrategies(ApplicationContext context) {
+		/**这个方法里有九种策略，即九大组件，每个用户的请求都会经过这些处理策略之后，才能完成结果输出*/
+
+		/** 文件上传解析，如果请求类型是 multipart 将通过 MultipartResolver 进行文件上传解析*/
 		initMultipartResolver(context);
+
+		/** 本地化解析*/
 		initLocaleResolver(context);
+
+		/** 主题解析（换肤）*/
 		initThemeResolver(context);
+
+		/** 通过 HandlerMapping，将请求映射到处理器 */
 		initHandlerMappings(context);
+
+		/** 通过 HandlerAdapter 进行多类型的参数动态匹配*/
 		initHandlerAdapters(context);
+
+		/** 如果执行过程中遇到异常，则交给 HandlerExceptionResolver 进行解析*/
 		initHandlerExceptionResolvers(context);
+
+		/** 直接解析请求到视图名*/
 		initRequestToViewNameTranslator(context);
+
+		/** 解析逻辑视图*/
 		initViewResolvers(context);
+
+		/** flash 映射管理器 */
 		initFlashMapManager(context);
 	}
 
@@ -1013,6 +1033,10 @@ public class DispatcherServlet extends FrameworkServlet {
 				multipartRequestParsed = (processedRequest != request);
 
 				// Determine handler for the current request.
+				/**
+				 * 这里返回的是一个包含了 interceptors 拦截器和 需要调用的controller中的方法名的执行链
+				 * 这个 mappedHandler 是 HandlerExecutionChain，处理器执行链，不仅仅包含 handler 处理器
+				 */
 				mappedHandler = getHandler(processedRequest);
 				if (mappedHandler == null) {
 					noHandlerFound(processedRequest, response);
@@ -1020,6 +1044,11 @@ public class DispatcherServlet extends FrameworkServlet {
 				}
 
 				// Determine handler adapter for the current request.
+				/**
+				 * 根据 getHandler(processedRequest) 返回的方法执行链，获取到 handler 对象
+				 * 然后根据方法的参数，进行动态匹配，并且可以为参数自动转型
+				 * 返回一个处理器适配器 HandlerAdapter，通过处理器适配器执行请求的方法
+				 */
 				HandlerAdapter ha = getHandlerAdapter(mappedHandler.getHandler());
 
 				// Process last-modified header, if supported by the handler.
@@ -1031,19 +1060,32 @@ public class DispatcherServlet extends FrameworkServlet {
 						return;
 					}
 				}
-
+				/**
+				 * 执行所有拦截器的 preHandle 方法，如果有返回 false 的拦截器，
+				 * 则取反进入 if 判断，直接返回，不再做下一步处理
+				 */
 				if (!mappedHandler.applyPreHandle(processedRequest, response)) {
 					return;
 				}
 
 				// Actually invoke the handler.
+				/**
+				 * 执行处理器适配器 HandlerAdapter 的 handle 方法，
+				 * 返回一个 ModelAndView 对象
+				 */
 				mv = ha.handle(processedRequest, response, mappedHandler.getHandler());
 
 				if (asyncManager.isConcurrentHandlingStarted()) {
 					return;
 				}
-
+				/**
+				 * 设置 view 视图名
+				 */
 				applyDefaultViewName(processedRequest, mv);
+
+				/**
+				 * 执行拦截器的 postHandle 方法
+				 */
 				mappedHandler.applyPostHandle(processedRequest, response, mv);
 			}
 			catch (Exception ex) {
@@ -1054,6 +1096,9 @@ public class DispatcherServlet extends FrameworkServlet {
 				// making them available for @ExceptionHandler methods and other scenarios.
 				dispatchException = new NestedServletException("Handler dispatch failed", err);
 			}
+			/**
+			 * 开始进行视图解析
+			 */
 			processDispatchResult(processedRequest, response, mappedHandler, mv, dispatchException);
 		}
 		catch (Exception ex) {
@@ -1115,6 +1160,9 @@ public class DispatcherServlet extends FrameworkServlet {
 
 		// Did the handler return a view to render?
 		if (mv != null && !mv.wasCleared()) {
+			/**
+			 * 渲染视图
+			 */
 			render(mv, request, response);
 			if (errorView) {
 				WebUtils.clearErrorRequestAttributes(request);
@@ -1132,6 +1180,9 @@ public class DispatcherServlet extends FrameworkServlet {
 		}
 
 		if (mappedHandler != null) {
+			/**
+			 * 视图渲染完成后，如果有拦截器，执行拦截器的 afterCompletion 方法
+			 */
 			mappedHandler.triggerAfterCompletion(request, response, null);
 		}
 	}
@@ -1228,6 +1279,10 @@ public class DispatcherServlet extends FrameworkServlet {
 	 */
 	@Nullable
 	protected HandlerExecutionChain getHandler(HttpServletRequest request) throws Exception {
+		/**
+		 * private List<HandlerMapping> handlerMappings;
+		 * 循环所有 HandlerMapping，找到请求对应的 handler
+		 */
 		if (this.handlerMappings != null) {
 			for (HandlerMapping mapping : this.handlerMappings) {
 				HandlerExecutionChain handler = mapping.getHandler(request);
@@ -1341,8 +1396,11 @@ public class DispatcherServlet extends FrameworkServlet {
 		Locale locale =
 				(this.localeResolver != null ? this.localeResolver.resolveLocale(request) : request.getLocale());
 		response.setLocale(locale);
-
+		/**
+		 * 声明视图对象
+		 */
 		View view;
+		/** 获得视图名*/
 		String viewName = mv.getViewName();
 		if (viewName != null) {
 			// We need to resolve the view name.
@@ -1369,6 +1427,9 @@ public class DispatcherServlet extends FrameworkServlet {
 			if (mv.getStatus() != null) {
 				response.setStatus(mv.getStatus().value());
 			}
+			/**
+			 * 进行试图渲染
+			 */
 			view.render(mv.getModelInternal(), request, response);
 		}
 		catch (Exception ex) {
