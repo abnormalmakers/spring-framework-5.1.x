@@ -1,10 +1,10 @@
-package com.luban.dao;
+package com.qmy.dao;
 
 import org.springframework.stereotype.Repository;
 
-
-public class IndexDao {
-
+@Repository
+public class IndexDaoImpl implements  IndexDao{
+	@Override
 	public void query(){
 		System.out.println("this is query");
 	}
