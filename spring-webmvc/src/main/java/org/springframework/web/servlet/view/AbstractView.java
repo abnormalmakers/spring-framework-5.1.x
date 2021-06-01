@@ -313,7 +313,13 @@ public abstract class AbstractView extends WebApplicationObjectSupport implement
 		}
 
 		Map<String, Object> mergedModel = createMergedOutputModel(model, request, response);
+		/**
+		 * 作响应前的准备工作，设置响应头信息
+		 */
 		prepareResponse(request, response);
+		/**
+		 * 开始执行响应的工作，即写入视图内容
+		 */
 		renderMergedOutputModel(mergedModel, getRequestToExpose(request), response);
 	}
 

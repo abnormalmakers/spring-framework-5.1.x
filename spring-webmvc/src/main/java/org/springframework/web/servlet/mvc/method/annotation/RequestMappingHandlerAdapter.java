@@ -790,6 +790,9 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 			}
 			else {
 				// No HttpSession available -> no mutex necessary
+				/**
+				 * 调用 handler 方法，返回一个 ModelAndView
+				 */
 				mav = invokeHandlerMethod(request, response, handlerMethod);
 			}
 		}
@@ -889,7 +892,9 @@ public class RequestMappingHandlerAdapter extends AbstractHandlerMethodAdapter
 				});
 				invocableMethod = invocableMethod.wrapConcurrentResult(result);
 			}
-
+			/**
+			 * 执行 handler 方法
+			 */
 			invocableMethod.invokeAndHandle(webRequest, mavContainer);
 			if (asyncManager.isConcurrentHandlingStarted()) {
 				return null;

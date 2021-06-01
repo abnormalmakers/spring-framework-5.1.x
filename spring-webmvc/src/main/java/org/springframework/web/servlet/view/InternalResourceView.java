@@ -168,6 +168,10 @@ public class InternalResourceView extends AbstractUrlBasedView {
 			if (logger.isDebugEnabled()) {
 				logger.debug("Forwarding to [" + getUrl() + "]");
 			}
+			/**
+			 * 开始写入，这个方法无法读入，实际上就是在 getWriter().write(....)
+			 * 进行页面的写入
+			 */
 			rd.forward(request, response);
 		}
 	}
