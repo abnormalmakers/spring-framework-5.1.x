@@ -120,16 +120,41 @@ public abstract class AbstractRefreshableApplicationContext extends AbstractAppl
 	 * bean factory, shutting down the previous bean factory (if any) and
 	 * initializing a fresh bean factory for the next phase of the context's lifecycle.
 	 */
+	/**
+	 * 这是只有 new ClassPathXmlApplicationContext 容器才能进入的方法
+	 * 刷新 bean 工厂
+	 * 	销毁bean
+	 * 	 关闭 bean 工厂
+	 * 	 创建一个新的 bean 工厂 DefaultListableBeanFactory
+	 * 	 加载 bean 到 BeanFactory 中
+	 * @throws BeansException
+	 */
 	@Override
 	protected final void refreshBeanFactory() throws BeansException {
 		if (hasBeanFactory()) {
+			/** 销毁 bean，清空单例池 singletonObjects */
 			destroyBeans();
+			/** 关闭 bean 工厂 */
 			closeBeanFactory();
 		}
 		try {
+			/**
+			 *  创建 bean 工厂
+			 */
 			DefaultListableBeanFactory beanFactory = createBeanFactory();
+			/**
+			 *  序列化 beanFactory
+			 */
 			beanFactory.setSerializationId(getId());
+			/**
+			 * 设置循环依赖
+			 * 设置 bean 覆盖
+			 */
 			customizeBeanFactory(beanFactory);
+			/**
+			 * 通过 BeanDefinitionReader 解析 xml 为 Document
+			 * 将 Document 注册到 BeanFactory 中
+			 */
 			loadBeanDefinitions(beanFactory);
 			synchronized (this.beanFactoryMonitor) {
 				this.beanFactory = beanFactory;

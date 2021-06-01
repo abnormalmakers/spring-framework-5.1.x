@@ -530,6 +530,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 			 *  返回 this.beanFactory
 			 *  所以 getFactory() 返回的是 DefaultListableBeanFactory，
 			 *  此 beanFactory 是在调用 GenericApplicationContext 构造函数时实例化的
+			 *  如果是 new 的容器是 ClassPathXmlApplicationContext，那么会在这儿对 xml 文件进行解析并装载 xml 中配置的 bean 信息
 			 * */
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
@@ -687,12 +688,14 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	}
 
 	/**
-	 * 此处的 beanFactoryPostProcessor 参数即 DefaultListableBeanFactory
-	 * DefaultListableBeanFactory implements ConfigurableListableBeanFactory
-	 * 配置其标准特征，比如上下文的加载器，CLassLoader 和 post-processors 回调
 	 * Configure the factory's standard context characteristics,
 	 * such as the context's ClassLoader and post-processors.
 	 * @param beanFactory the BeanFactory to configure
+	 */
+	/**
+	 * 此处的 beanFactoryPostProcessor 参数即 DefaultListableBeanFactory
+	 * DefaultListableBeanFactory implements ConfigurableListableBeanFactory
+	 * 配置其标准特征，比如上下文的加载器，CLassLoader 和 post-processors 回调
 	 */
 	protected void prepareBeanFactory(ConfigurableListableBeanFactory beanFactory) {
 		// Tell the internal bean factory to use the context's class loader etc.
